@@ -4,6 +4,28 @@ using namespace std;
 //全局通用，用完递增，永远不会重复
 //状态序号
 int stateIndex = 0;
+map<char, int>dict;
+
+void Automaton::edgeMerge(const map<uint64, bitset<256>>&p)
+{
+    for (auto& i : p) {
+        this->edges[i.first] |=i.second;
+    }
+}
+
+Automaton::Automaton(char p)
+{
+    this->begin = stateIndex++;
+    this->end = stateIndex++;
+    this->edges[EDGE(this->begin, this->end)].set(p);
+}
+
+Automaton::Automaton()
+{
+    this->begin = 0;
+    this->end = 0;
+    this->edges[EDGE(this->begin, this->end)].reset();
+}
 
 
 /*
@@ -12,13 +34,13 @@ int stateIndex = 0;
 Automaton* merge(vector<Automaton*>FAS)
 {
     int begin=stateIndex++,end = stateIndex++;
-    Automaton* p = new Automaton;
+    Automaton* p = new Automaton();
     p->begin = begin;
     p->end = end;
     for (auto i : FAS) {
-        p->edges.push_back(edge( begin, i->begin, Epsilon));
-        p->edges.push_back(edge(i->end, end, Epsilon));
-        p->edges.insert(p->edges.end(),i->edges.begin(),i->edges.end());
+        p->edges[EDGE(begin, end)].set(Epsilon);
+        p->edges[EDGE(i->end, end)].set(Epsilon);
+        p->edgeMerge(i->edges);
         delete i;
     }
     return p;
@@ -30,9 +52,9 @@ Automaton* merge(vector<Automaton*>FAS)
 Automaton* closure(Automaton* p) 
 {
     int begin =stateIndex++, end =stateIndex++;
-    p->edges.push_back(edge(begin, p->begin, Epsilon));
-    p->edges.push_back(edge(p->end, end, Epsilon));
-    p->edges.push_back(edge(p->end, p->begin, Epsilon));
+    p->edges[EDGE(begin, p->begin)].set(Epsilon);
+    p->edges[EDGE(p->end,end)].set(Epsilon);
+    p->edges[EDGE(p->end, p->begin)].set(Epsilon);
     p->begin = begin;
     p->end = end;
     return p;
@@ -43,9 +65,9 @@ Automaton* closure(Automaton* p)
 */
 Automaton* connect(Automaton* p,Automaton*q)
 {
-    p->edges.push_back(edge(p->end, q->begin, Epsilon));
+    p->edges[EDGE(p->end, q->begin)].set(Epsilon);
     p->end = q->end;
-    p->edges.insert(p->edges.end(), q->edges.begin(), q->edges.end());
+    p->edgeMerge(q->edges);
     delete q;
     return p;
 }

@@ -1,24 +1,21 @@
 #pragma once
 #include <vector>
 #include <map>
-#include <set>
-#define Epsilon 0
-
-struct edge {
-	int begin;
-	int end;
-	std::set<char>factor;
-
-	edge(int a, int b, char p) :begin(a), end(b) {
-		factor.insert(p);
-	}
-};
+#include <bitset>
+#define Epsilon 1
+using uint64 =unsigned long long int;
+#define BEGIN(x) ((int)((uint64)x>>32))
+#define EDGE(x,y) (((uint64)x<<32)+(uint64)y)
+#define END(x) ((int)x)
 
 class Automaton {
 public: 
-	std::vector<edge>edges;
+	std::map<uint64,std::bitset<256>>edges;
 	int begin;
 	int end;
+	void edgeMerge(const std::map<uint64, std::bitset<256>>&);
+	Automaton(char p);
+	Automaton();
 };
 
 
