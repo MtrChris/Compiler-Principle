@@ -1,2 +1,5 @@
 
 /.vs
+/Compiler-Principle/x64
+Compiler-Principle/Compiler-Principle.vcxproj
+Compiler-Principle/Compiler-Principle.vcxproj.filters

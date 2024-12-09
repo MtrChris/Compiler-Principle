@@ -2,23 +2,26 @@
 #include <vector>
 #include <map>
 #include <set>
-
-struct state {
-	int index;
-	bool isFinal;
-};
+#define Epsilon 0
 
 struct edge {
-	state* begin;
-	state* end;
+	int begin;
+	int end;
 	std::set<char>factor;
+
+	edge(int a, int b, char p) :begin(a), end(b) {
+		factor.insert(p);
+	}
 };
 
 class Automaton {
-	std::vector<state>states;
+public: 
 	std::vector<edge>edges;
-	state* beginer;
-	state* end;
+	int begin;
+	int end;
 };
 
 
+Automaton* merge(std::vector<Automaton*>FAS);
+Automaton* closure(Automaton* p);
+Automaton* connect(Automaton* p, Automaton* q);
