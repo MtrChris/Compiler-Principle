@@ -46,7 +46,7 @@ void ElementDict::createElem(AlgElement *elem)
   elem->id = elemList.size() - 1;
 }
 
-int ElementDict::findElem(const AlgElement &elem)
+int ElementDict::findElem(const AlgElement &elem) const
 {
   for (int i = 0; i < elemList.size(); i++)
   {
@@ -58,9 +58,14 @@ int ElementDict::findElem(const AlgElement &elem)
   return -1;
 }
 
-int ElementDict::findElem(const string &elemName)
+int ElementDict::findElem(const string &elemName) const
 {
   return findElem(NonTerminalElement(elemName));
+}
+
+int ElementDict::findElem(const string &elemType, const string &elemVal) const
+{
+  return findElem(TerminalElement(elemType, elemVal));
 }
 
 void ElementDict::updateElem(AlgElement *&elem)
@@ -80,7 +85,7 @@ void ElementDict::updateElem(AlgElement *&elem)
   }
 }
 
-AlgElement *ElementDict::getElem(int index)
+AlgElement *ElementDict::getElem(int index) const
 {
   return elemList[index];
 }
@@ -170,9 +175,22 @@ void ElementDict::_calculateFirst(int curElem, vector<bool> &calcState)
   }
 }
 
-const set<int> &ElementDict::getFirstSet(int id)
+const set<int> &ElementDict::getFirstSet(int id) const
 {
   return firstSet[id];
+}
+
+int ElementDict::getDictLength() const
+{
+  return elemList.size();
+}
+
+void ElementDict::print() const
+{
+  for (int i = 0; i < elemList.size(); i++)
+  {
+    elemList[i]->print();
+  }
 }
 
 ElementDict::~ElementDict()
@@ -311,6 +329,21 @@ void ProductionAlg::splitAlg(vector<ProductionAlg> &algs)
   algs.erase(algs.begin(), algs.begin() + srcSize);
 }
 
+AlgElement *ProductionAlg::getLeftElem() const
+{
+  return leftElem;
+}
+
+AlgElement *ProductionAlg::getAlgElement(int index) const
+{
+  return rightAlg[index];
+}
+
+int ProductionAlg::getAlgLength() const
+{
+  return rightAlg.size();
+}
+
 // -------- GrammarDFAAlg类的成员函数实现 --------
 DFANodeAlg::DFANodeAlg(int _algId, int _curpos, std::set<int> _prospectCh)
     : algId(_algId), curpos(_curpos), prospectCh(_prospectCh)
@@ -328,6 +361,31 @@ void DFANodeAlg::getAlgMeta(pair<int, int> &res) const
 {
   res.first = algId;
   res.second = curpos;
+}
+
+int DFANodeAlg::getAlgId() const
+{
+  return algId;
+}
+
+int DFANodeAlg::getAlgPos() const
+{
+  return curpos;
+}
+
+const ProductionAlg &DFANodeAlg::getFullAlg(GrammarParser *parser) const
+{
+  return parser->getProductionAlg(algId);
+}
+
+AlgElement *DFANodeAlg::getCurElement(GrammarParser *parser) const
+{
+  return parser->getProductionAlg(algId).getAlgElement(curpos);
+}
+
+bool DFANodeAlg::isAtEnd(GrammarParser *parser) const
+{
+  return parser->getProductionAlg(algId).getAlgLength() == curpos;
 }
 
 bool DFANodeAlg::operator==(const DFANodeAlg &right) const
@@ -363,6 +421,21 @@ void GrammarDFATransfer::setDst(int _dstId)
   dstId = _dstId;
 }
 
+int GrammarDFATransfer::getSrc()
+{
+  return srcId;
+}
+
+int GrammarDFATransfer::getDstId()
+{
+  return dstId;
+}
+
+int GrammarDFATransfer::getChId()
+{
+  return chId;
+}
+
 // -------- GrammarDFANode类的成员函数实现 --------
 GrammarDFANode::GrammarDFANode(int _stateId) : stateId(_stateId)
 {
@@ -374,6 +447,16 @@ void GrammarDFANode::addAlg(DFANodeAlg alg)
   pair<int, int> algInfo;
   alg.getAlgMeta(algInfo);
   algIndex[algInfo] = alg;
+}
+
+const set<DFANodeAlg> &GrammarDFANode::getAlgs() const
+{
+  return nodeAlg;
+}
+
+int GrammarDFANode::getId() const
+{
+  return stateId;
 }
 
 // 状态结点排序规则
@@ -393,14 +476,11 @@ void GrammarDFA::expandNodeAlg(GrammarDFANode *node)
 {
   for (set<DFANodeAlg>::iterator algItem = node->nodeAlg.begin(); algItem != node->nodeAlg.end(); algItem++)
   {
-    pair<int, int> algInfo;
-    algItem->getAlgMeta(algInfo);
-    ProductionAlg &targetAlg = parser->algs[algInfo.first];
-    if (algInfo.second == parser->algs[algInfo.first].rightAlg.size())
+    if (algItem->isAtEnd(parser))
     {
       continue; // 该产生式已到结尾，不扩展
     }
-    AlgElement *curElem = targetAlg.rightAlg[algInfo.second];
+    AlgElement *curElem = algItem->getCurElement(parser);
     if (curElem->getIsTerminal())
     {
       continue;
@@ -415,18 +495,18 @@ void GrammarDFA::expandNodeAlg(GrammarDFANode *node)
       }
     }
     // 将所有该非终结符的产生式添加到newAlgs中
-    for (int j = 0; j < parser->classifiedAlgs[curElem->getId()].size(); j++)
+    const vector<int> &chAlgs = parser->getClassifiedAlgs(curElem->getId());
+    for (int j = 0; j < chAlgs.size(); j++)
     {
-      int curAlgId = parser->classifiedAlgs[curElem->getId()][j];
-      if (node->algIndex.find({curAlgId, 0}) == node->algIndex.end())
+      if (node->algIndex.find({chAlgs[j], 0}) == node->algIndex.end())
       {
         // 未找到目标产生式，则添加该产生式
-        node->addAlg(DFANodeAlg(curAlgId, 0, curProspect));
+        node->addAlg(DFANodeAlg(chAlgs[j], 0, curProspect));
       }
       else
       {
         // 目标产生式已经在数组中，则更新产生式的展望符
-        DFANodeAlg targetAlg(node->algIndex[{curAlgId, 0}]);
+        DFANodeAlg targetAlg(node->algIndex[{chAlgs[j], 0}]);
         node->nodeAlg.erase(targetAlg);
         for (set<int>::iterator it = curProspect.begin(); it != curProspect.end(); it++)
         {
@@ -441,23 +521,21 @@ void GrammarDFA::expandNodeAlg(GrammarDFANode *node)
 // 计算展望符，返回值为该产生式是否可以推导出空字
 bool GrammarDFA::getProspectCh(const DFANodeAlg &alg, set<int> &res)
 {
-  pair<int, int> algInfo;
-  alg.getAlgMeta(algInfo);
-  ProductionAlg &targetAlg = parser->algs[algInfo.first];
-  if (algInfo.second == targetAlg.rightAlg.size())
+  const ProductionAlg &targetAlg = alg.getFullAlg(parser);
+  if (alg.isAtEnd(parser))
   {
     return true;
   }
-  int i = algInfo.second + 1; // 从当前位置的下一个符号开始
-  for (; i < targetAlg.rightAlg.size(); i++)
+  int i = alg.getAlgPos() + 1; // 从当前位置的下一个符号开始
+  for (; i < targetAlg.getAlgLength(); i++)
   {
-    if (targetAlg.rightAlg[i]->getIsTerminal())
+    if (targetAlg.getAlgElement(i)->getIsTerminal())
     {
-      res.insert(targetAlg.rightAlg[i]->getId()); // 终结符：直接加入展望符中
+      res.insert(targetAlg.getAlgElement(i)->getId()); // 终结符：直接加入展望符中
       break;
     }
     // 非终结符：将该非终结符的FIRST集合作为展望符
-    const set<int> elemFirst = parser->dict.getFirstSet(targetAlg.rightAlg[i]->getId());
+    const set<int> elemFirst = parser->getDict().getFirstSet(targetAlg.getAlgElement(i)->getId());
     for (set<int>::iterator it = elemFirst.begin(); it != elemFirst.end(); it++)
     {
       if (*it != EMPTYWORDID)
@@ -508,22 +586,21 @@ void GrammarDFA::buildDFA()
     map<int, GrammarDFANode *> chTransfer; // 记录每个符号对应的转移状态
     for (set<DFANodeAlg>::iterator algItem = curNode->nodeAlg.begin(); algItem != curNode->nodeAlg.end(); algItem++)
     {
-      pair<int, int> algInfo;
-      algItem->getAlgMeta(algInfo);
-      algItem->getAlgMeta(algInfo);
       // !!! debug
-      cout << curNode->stateId << " " << algInfo.first << " [" << algInfo.second << "] (";
-      for (set<int>::iterator it = algItem->prospectCh.begin(); it != algItem->prospectCh.end(); it++)
-      {
-        cout << *it << " ";
-      }
-      cout << ")" << endl;
+      // pair<int, int> algInfo;
+      // algItem->getAlgMeta(algInfo);
+      // cout << curNode->stateId << " " << algInfo.first << " [" << algInfo.second << "] (";
+      // for (set<int>::iterator it = algItem->prospectCh.begin(); it != algItem->prospectCh.end(); it++)
+      // {
+      //   cout << *it << " ";
+      // }
+      // cout << ")" << endl;
       // ---- !!! debug
-      if (algInfo.second == parser->algs[algInfo.first].rightAlg.size())
+      if (algItem->isAtEnd(parser))
       {
         continue; // 该产生式已到结尾，不需要转移
       }
-      int curCh = parser->algs[algInfo.first].rightAlg[algInfo.second]->getId(); // 该产生式接受的字符
+      int curCh = algItem->getCurElement(parser)->getId(); // 该产生式接受的字符
       if (chTransfer.find(curCh) == chTransfer.end())
       {
         // 没有接受该字符的新状态，创建状态
@@ -538,16 +615,26 @@ void GrammarDFA::buildDFA()
     delete curNode;
   }
   // !!! debug
-  for (int i = 0; i < transfer.size(); i++)
-  {
-    transfer[i]->print();
-  }
+  // for (int i = 0; i < transfer.size(); i++)
+  // {
+  //   transfer[i]->print();
+  // }
   // ---- !!! debug
+}
+
+const set<GrammarDFANode> &GrammarDFA::getNodes() const
+{
+  return dfa;
 }
 
 void GrammarDFA::linkParser(GrammarParser *_parser)
 {
   parser = _parser;
+}
+
+const vector<GrammarDFATransfer *> &GrammarDFA::getTransfer() const
+{
+  return transfer;
 }
 
 GrammarDFA::~GrammarDFA()
@@ -558,7 +645,130 @@ GrammarDFA::~GrammarDFA()
   }
 }
 
+// -------- LRItem类的成员函数实现 -------
+LRItem::LRItem(ActionType _action, int _index) : action(_action), index(_index)
+{
+}
+
+void LRItem::setItem(ActionType _action, int _index)
+{
+  action = _action;
+  index = _index;
+}
+
+// -------- LRChart类的成员函数实现 --------
+void LRChart::init(GrammarParser *_parser)
+{
+  parser = _parser;
+  chart.resize(_parser->getDFA().getNodes().size(), vector<LRItem>(_parser->getDict().getDictLength()));
+}
+
+void LRChart::build()
+{
+  // 1. 将每个转移对应到SHIFT和GOTO
+  const vector<GrammarDFATransfer *> &dfaTransfer = parser->getDFA().getTransfer();
+  for (vector<GrammarDFATransfer *>::const_iterator tsf = dfaTransfer.begin(); tsf < dfaTransfer.end(); tsf++)
+  {
+    ActionType tsfAction = (parser->getDict().getElem((*tsf)->getChId())->getIsTerminal()) ? SHIFT : GOTO;
+    chart[(*tsf)->getSrc()][(*tsf)->getChId()].setItem(tsfAction, (*tsf)->getDstId());
+  }
+  // 2. 遍历每个状态，对应到REDUCE
+  const set<GrammarDFANode> &dfaNodes = parser->getDFA().getNodes();
+  for (set<GrammarDFANode>::const_iterator node = dfaNodes.begin(); node != dfaNodes.end(); node++)
+  {
+    const set<DFANodeAlg> &nodeAlgs = node->getAlgs();
+    for (set<DFANodeAlg>::const_iterator alg = nodeAlgs.begin(); alg != nodeAlgs.end(); alg++)
+    {
+      if (alg->isAtEnd(parser)) // 对于已经到结尾的产生式，置为REDUCE
+      {
+        for (set<int>::iterator ch = alg->prospectCh.begin(); ch != alg->prospectCh.end(); ch++)
+        {
+          chart[node->getId()][*ch].setItem(REDUCE, alg->getAlgId());
+        }
+      }
+    }
+  }
+  // 3. 设置ACCEPT状态：由于添加了起始产生式，ACCEPT状态必定处于1状态
+  chart[ACCSTATEID][ENDCHID].setItem(ACCEPT);
+}
+
+const LRItem &LRChart::get(int state, int ch) const
+{
+  return chart[state][ch];
+}
+
+void LRChart::print() const
+{
+  cout << setiosflags(ios::left);
+  cout << setw(4) << " ";
+  for (int ch = 0; ch < parser->getDict().getDictLength(); ch++)
+  {
+    cout << setw(4) << ch;
+  }
+  cout << endl;
+  for (int state = 0; state < parser->getDFA().getNodes().size(); state++)
+  {
+    cout << setw(4) << state;
+    for (int ch = 0; ch < parser->getDict().getDictLength(); ch++)
+    {
+      const LRItem &item = chart[state][ch];
+      switch (item.action)
+      {
+      case ACCEPT:
+        cout << "ACC ";
+        break;
+      case ERROR:
+        cout << "ERR ";
+        break;
+      case SHIFT:
+        cout << "S" << setw(3) << item.index;
+        break;
+      case REDUCE:
+        cout << "R" << setw(3) << item.index;
+        break;
+      case GOTO:
+        cout << "G" << setw(3) << item.index;
+        break;
+      }
+    }
+    cout << endl;
+  }
+}
+
 // -------- GrammarParser类的成员函数实现 --------
+const ProductionAlg &GrammarParser::getProductionAlg(int index)
+{
+  return algs[index];
+}
+
+const GrammarDFA &GrammarParser::getDFA() const
+{
+  return dfa;
+}
+
+const std::vector<int> &GrammarParser::getClassifiedAlgs(int ch)
+{
+  return classifiedAlgs[ch];
+}
+
+const ElementDict &GrammarParser::getDict() const
+{
+  return dict;
+}
+
+void GrammarParser::printAlgs() const
+{
+  for (int i = 0; i < algs.size(); i++)
+  {
+    cout << algs[i].id << ": " << algs[i].leftElem->getId() << " -> ";
+    for (int j = 0; j < algs[i].rightAlg.size(); j++)
+    {
+      cout << algs[i].rightAlg[j]->getId() << " ";
+    }
+    cout << endl;
+  }
+}
+
 void GrammarParser::processGrammarRule()
 {
   try
@@ -576,22 +786,23 @@ void GrammarParser::processGrammarRule()
       algs.push_back(alg);
     }
     ProductionAlg::splitAlg(algs);
-    // !!! debug
-    for (int i = 0; i < algs.size(); i++)
-    {
-      cout << algs[i].id << ": " << algs[i].leftElem->getId() << " -> ";
-      for (int j = 0; j < algs[i].rightAlg.size(); j++)
-      {
-        cout << algs[i].rightAlg[j]->getId() << " ";
-      }
-      cout << endl;
-    }
-    // --- !!! debug
     dict.classifyAlg();
     dict.calculateFirst();
-    GrammarDFA gdfa;
-    gdfa.linkParser(this);
-    gdfa.buildDFA();
+    dfa.linkParser(this);
+    dfa.buildDFA();
+    chart.init(this);
+    chart.build();
+
+    // 以下为打印操作
+    cout << "---------- 产生式表 ----------" << endl;
+    printAlgs();
+    cout << endl;
+    cout << "---------- 符号表 -------- " << endl;
+    dict.print();
+    cout << endl;
+    cout << "---------- LR分析表 -----------" << endl;
+    chart.print();
+    cout << endl;
   }
   catch (InputException &e)
   {
@@ -608,6 +819,5 @@ int main()
 {
   GrammarParser parser;
   parser.processGrammarRule();
-  cout << "FINISH" << endl;
   return 0;
 }
