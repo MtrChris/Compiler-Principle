@@ -1,8 +1,10 @@
 #include "Lex.h"
 #include <algorithm>
+#include <fstream>
 using namespace std;
 
-extern map<string, Automaton*>CompleteNFA;
+//已识别的短语和自动机之间的对应关系
+map<string, Automaton*>CompleteNFA;
 
 //可识别字符的位图
 bitset<256>recognizeCh;
@@ -16,8 +18,10 @@ int aIndex = 0xFFFF;
 //自动机占位符的集合
 map<int, Automaton*>automatons;
 
-int REtoNFA(vector<int>RE);
+//存储词法
+vector<string>lexs;
 
+extern int stateIndex;
 
 // 生成可识别字符的位图
 void GRC()
@@ -35,6 +39,27 @@ void GRC()
 		recognizeCh.set(i);
 	}
 }
+
+//从文件中读取词法
+void readRE(string path)
+{
+	ifstream file(path);
+
+	if (!file.is_open()) {
+		throw exception("词法读取失败");
+	}
+
+	string line;
+	while (getline(file, line)) {
+		lexs.push_back(line);
+	}
+
+	// 关闭文件
+	file.close();
+}
+
+
+
 
 //由正规式生成NFA
 Automaton* getNFA(string RE)
@@ -151,3 +176,27 @@ int REtoNFA(vector<int>RE)
 	return RE[0];
 }
 
+//合并多个自动机
+Automaton* mergeMultiA(map<int, string>& finalStates)
+{
+	auto p = new Automaton();
+	int j = stateIndex++;
+	p->begin = j;
+	for (auto& i : CompleteNFA) {
+		p->edges[EDGE(j, i.second->begin)].set(Epsilon);
+		p->edgeMerge(i.second->edges);
+		finalStates[i.second->end] = i.first;
+		delete i.second;
+	}
+	return p;
+}
+
+//加工词法
+void processLex()
+{
+	for (auto i : lexs) {
+		auto j = i.find_first_of('>');
+		auto k = i.substr(j + 1, i.size() - j - 1);
+		CompleteNFA.insert(pair<string, Automaton*>{i.substr(0, j), getNFA(k)});
+	}
+}

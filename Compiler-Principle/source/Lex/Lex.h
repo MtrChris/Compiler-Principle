@@ -3,6 +3,7 @@
 #include <map>
 #include <bitset>
 #include <string>
+#include <iostream>
 
 #define Epsilon 0
 
@@ -21,14 +22,24 @@ public:
 	Automaton();
 };
 
+struct edges {
+	map<uint64, bitset<256>>::iterator begin;
+	map<uint64, bitset<256>>::iterator end;
+};
+
 //LexTool.cpp
 
-Automaton* merge(std::vector<Automaton*>FAS);
 Automaton* merge(Automaton* a, Automaton* b);
 Automaton* closure(Automaton* p);
 Automaton* connect(Automaton* p, Automaton* q);
 void printNFA(Automaton* p);
 
-//RegularExpression
+//REtoNFA
 
-Automaton* getNFA(std::string RE);
+void readRE(std::string path);
+void processLex();
+void GRC();
+Automaton* mergeMultiA(std::map<int, std::string>& finalStates);
+
+//NFAtoDFA.cpp
+Automaton* simplifyNFA(Automaton*);

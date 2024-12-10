@@ -1,5 +1,4 @@
 #include "Lex.h"
-#include <iostream>
 using namespace std;
 
 //全局通用，用完递增，永远不会重复
@@ -24,24 +23,9 @@ Automaton::Automaton()
 {
     this->begin = 0;
     this->end = 0;
-    this->edges[EDGE(this->begin, this->end)].reset();
+    this->edges.clear();
 }
 
-//自动机的并运算
-Automaton* merge(vector<Automaton*>FAS)
-{
-    int begin=stateIndex++,end = stateIndex++;
-    Automaton* p = new Automaton();
-    p->begin = begin;
-    p->end = end;
-    for (auto i : FAS) {
-        p->edges[EDGE(begin, i->begin)].set(Epsilon);
-        p->edges[EDGE(i->end, end)].set(Epsilon);
-        p->edgeMerge(i->edges);
-        delete i;
-    }
-    return p;
-}
 
 // 自动机的并运算
 Automaton* merge(Automaton* a,Automaton*b)
@@ -101,7 +85,14 @@ void printNFA(Automaton* p)
 
 }
 
-
+//获得指定起点的所有边
+edges getEdge(int state,map<uint64,bitset<256>>& edge)
+{
+    struct edges p;
+    p.begin=edge.upper_bound((uint64)state << 32);
+    p.end = edge.upper_bound((uint64)(state + 1) << 32);
+    return p;
+}
 
 
 
