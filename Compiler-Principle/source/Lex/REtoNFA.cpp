@@ -9,9 +9,6 @@ map<string, Automaton*>CompleteNFA;
 //可识别字符的位图
 bitset<256>recognizeCh;
 
-//除a-z,A-Z,0-9外可被识别的字符
-char readableCh[] = { '_' };
-
 //自动机序号，比unsigned char型的最大值要大
 int aIndex = 0xFFFF;
 
@@ -21,10 +18,13 @@ map<int, Automaton*>automatons;
 //存储词法
 vector<string>lexs;
 
+//记录被用作标识符的自动机
+unordered_set<string>signA;
+
 extern int stateIndex;
 
 // 生成可识别字符的位图
-void GRC()
+void GRC(string line)
 {
 	for (char i = 'a'; i <= 'z'; i++) {
 		recognizeCh.set(i);
@@ -35,7 +35,7 @@ void GRC()
 	for (char i = '0'; i <= '9'; i++) {
 		recognizeCh.set(i);
 	}
-	for (auto i : readableCh) {
+	for (auto i : line) {
 		recognizeCh.set(i);
 	}
 }
@@ -50,6 +50,8 @@ void readRE(string path)
 	}
 
 	string line;
+	getline(file, line);
+	GRC(line);
 	while (getline(file, line)) {
 		lexs.push_back(line);
 	}
@@ -161,7 +163,9 @@ Automaton* getNFA(string RE)
 				throw exception("未找到匹配的短语");
 			}
 			RE.replace(i, j - i + 1, "");
-			automatons.insert(pair<int, Automaton*>{aIndex, new Automaton(q->second)});
+			auto r = new Automaton(q->second);
+			automatons.insert(pair<int, Automaton*>{aIndex, r});
+			signA.insert(p);
 			re.push_back(aIndex++);
 			continue;
 		}
@@ -181,6 +185,9 @@ Automaton* mergeMultiA(map<int, string>& finalStates)
 	int j = stateIndex++;
 	p->begin = j;
 	for (auto& i : CompleteNFA) {
+		//printNFA(i.second);
+		if (signA.find(i.first) != signA.end())
+			continue;
 		p->edges[EDGE(j, i.second->begin)].set(Epsilon);
 		p->edgeMerge(i.second->edges);
 		finalStates.insert(pair<int, string>{i.second->end, i.first});
@@ -195,6 +202,6 @@ void processLex()
 	for (auto i : lexs) {
 		auto j = i.find_first_of('>');
 		auto k = i.substr(j + 1, i.size() - j - 1);
-		CompleteNFA.insert(pair<string, Automaton*>{i.substr(0, j), getNFA(k)});
+		CompleteNFA.insert(pair<string, Automaton*>{i.substr(0, j),getNFA(k)});
 	}
 }

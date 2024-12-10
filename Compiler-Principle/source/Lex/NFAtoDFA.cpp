@@ -1,27 +1,18 @@
 #include "Lex.h"
-#include <unordered_set>
+
 using namespace std;
 
 extern bitset<256> recognizeCh;
 
-void iFindEqualS(edges& e, unordered_set<int>& states)
-{
-	for (auto j = e.begin; j != e.end; j++) {
-		if (j->second.test(Epsilon)&&states.find(END(j->first)) != states.end()) {
-			states.insert(END(j->first));
-			iFindEqualS(e, states);
-		}
-	}
-}
 
 void findEqualS(map<uint64,bitset<256>>&edges,unordered_set<int>&states,int p)
 {
 	auto i = getEdges(p, edges);
 
 	for (auto j = i.begin; j != i.end; j++) {
-		if (j->second.test(Epsilon) && states.find(END(j->first)) != states.end()) {
+		if (j->second.test(Epsilon) && states.find(END(j->first)) == states.end()) {
 			states.insert(END(j->first));
-			iFindEqualS(i, states);
+			findEqualS(edges , states, END(j->first));
 		}
 	}
 }
@@ -30,7 +21,7 @@ void findTargetS(map<uint64, bitset<256>>& edges, unordered_set<int>& states, in
 {
 	auto i = getEdges(p, edges);
 	for (auto j = i.begin; j != i.end; j++) {
-		if (j->second.test(c) && states.find(END(j->first)) != states.end()) {
+		if (j->second.test(c) && states.find(END(j->first)) == states.end()) {
 			states.insert(END(j->first));
 		}
 	}
@@ -73,6 +64,7 @@ Automaton* NFAtoDFA(Automaton* oldA,map<int,string>& finalStates, map<int, strin
 
     standardA(oldA->edges);
 
+	states.insert(oldA->begin);
 	findEqualS(oldA->edges, states, oldA->begin);
 	stateMapping.push_back(states);
 	states.clear();
@@ -82,7 +74,11 @@ Automaton* NFAtoDFA(Automaton* oldA,map<int,string>& finalStates, map<int, strin
 			if (recognizeCh.test(ch)) {
 				for (auto j : stateMapping[index]) {
 					findTargetS(oldA->edges, states, j, ch);
-					findEqualS(oldA->edges, states, j);
+				}
+				for (auto j : states) {
+					unordered_set<int>k;
+					findEqualS(oldA->edges, k, j);
+					states.insert(k.begin(),k.end());
 				}
 				if (states.size() > 0) {
 					int k = isSubsetOfOne(stateMapping, states);
