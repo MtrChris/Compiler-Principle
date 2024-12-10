@@ -59,51 +59,6 @@ void readRE(string path)
 }
 
 
-
-
-//由正规式生成NFA
-Automaton* getNFA(string RE)
-{
-	aIndex = 0xFFFF;
-	vector<int>re;
-	automatons.clear();
-	for (int i = 0; i < RE.length();) {
-		if (i != '{') {
-			if (recognizeCh[RE[i]]) {
-				auto p = new Automaton(RE[i]);
-				automatons.insert(pair<int, Automaton*>{aIndex, p});
-				re.push_back(aIndex++);
-			}
-			else
-				re.push_back((int)RE[i]);
-		}
-		else {
-			int j = i + 1;
-			while(RE[j]!='}'&&j<RE.length()) {
-				j++;
-			}
-			if (j >= RE.length()) {
-				throw exception("未找到匹配的右花括号");
-			}
-			string p = RE.substr(i + 1, j - i - 1);
-			auto q = CompleteNFA.find(p);
-			if (q == CompleteNFA.end()) {
-				throw exception("未找到匹配的短语");
-			}
-			RE.replace(i, j - i + 1, "");
-			automatons.insert(pair<int, Automaton*>{aIndex, q->second});
-			re.push_back(aIndex++);
-			continue;
-		}
-		i++;
-	}
-	REtoNFA(re);
-	auto p = automatons[re[0]];
-	automatons.clear();
-	aIndex = 0xFFFF;
-	return p;
-}
-
 //getNFA的递归子程序
 int REtoNFA(vector<int>RE)
 {
@@ -176,6 +131,49 @@ int REtoNFA(vector<int>RE)
 	return RE[0];
 }
 
+//由正规式生成NFA
+Automaton* getNFA(string RE)
+{
+	aIndex = 0xFFFF;
+	vector<int>re;
+	automatons.clear();
+	for (int i = 0; i < RE.length();) {
+		if (RE[i] != '{') {
+			if (recognizeCh[RE[i]]) {
+				auto p = new Automaton(RE[i]);
+				automatons.insert(pair<int, Automaton*>{aIndex, p});
+				re.push_back(aIndex++);
+			}
+			else
+				re.push_back((int)RE[i]);
+		}
+		else {
+			int j = i + 1;
+			while (RE[j] != '}' && j < RE.length()) {
+				j++;
+			}
+			if (j >= RE.length()) {
+				throw exception("未找到匹配的右花括号");
+			}
+			string p = RE.substr(i + 1, j - i - 1);
+			auto q = CompleteNFA.find(p);
+			if (q == CompleteNFA.end()) {
+				throw exception("未找到匹配的短语");
+			}
+			RE.replace(i, j - i + 1, "");
+			automatons.insert(pair<int, Automaton*>{aIndex, new Automaton(q->second)});
+			re.push_back(aIndex++);
+			continue;
+		}
+		i++;
+	}
+	int i = REtoNFA(re);
+	auto p = automatons[i];
+	automatons.clear();
+	aIndex = 0xFFFF;
+	return p;
+}
+
 //合并多个自动机
 Automaton* mergeMultiA(map<int, string>& finalStates)
 {
@@ -185,7 +183,7 @@ Automaton* mergeMultiA(map<int, string>& finalStates)
 	for (auto& i : CompleteNFA) {
 		p->edges[EDGE(j, i.second->begin)].set(Epsilon);
 		p->edgeMerge(i.second->edges);
-		finalStates[i.second->end] = i.first;
+		finalStates.insert(pair<int, string>{i.second->end, i.first});
 		delete i.second;
 	}
 	return p;

@@ -19,12 +19,15 @@ public:
 	int end;
 	void edgeMerge(const std::map<uint64, std::bitset<256>>&);
 	Automaton(char p);
-	Automaton();
+	Automaton() :begin(0), end(0) {};
+	Automaton(const Automaton* other)
+		: edges(other->edges), begin(other->begin), end(other->end) {}
+
 };
 
 struct edges {
-	map<uint64, bitset<256>>::iterator begin;
-	map<uint64, bitset<256>>::iterator end;
+	std::map<uint64, std::bitset<256>>::iterator begin;
+	std::map<uint64, std::bitset<256>>::iterator end;
 };
 
 //LexTool.cpp
@@ -33,6 +36,8 @@ Automaton* merge(Automaton* a, Automaton* b);
 Automaton* closure(Automaton* p);
 Automaton* connect(Automaton* p, Automaton* q);
 void printNFA(Automaton* p);
+edges getEdges(int state, std::map<uint64, std::bitset<256>>& edge);
+void standardA(std::map<uint64, std::bitset<256>>& edge);
 
 //REtoNFA
 
@@ -42,4 +47,4 @@ void GRC();
 Automaton* mergeMultiA(std::map<int, std::string>& finalStates);
 
 //NFAtoDFA.cpp
-Automaton* simplifyNFA(Automaton*);
+Automaton* NFAtoDFA(Automaton* oldA, std::map<int, std::string>& finalStates, std::map<int, std::string>& newFinalStates);

@@ -19,12 +19,6 @@ Automaton::Automaton(char p)
     this->edges[EDGE(this->begin, this->end)].set(p);
 }
 
-Automaton::Automaton()
-{
-    this->begin = 0;
-    this->end = 0;
-    this->edges.clear();
-}
 
 
 // 自动机的并运算
@@ -86,7 +80,7 @@ void printNFA(Automaton* p)
 }
 
 //获得指定起点的所有边
-edges getEdge(int state,map<uint64,bitset<256>>& edge)
+edges getEdges(int state,map<uint64,bitset<256>>& edge)
 {
     struct edges p;
     p.begin=edge.upper_bound((uint64)state << 32);
@@ -94,6 +88,13 @@ edges getEdge(int state,map<uint64,bitset<256>>& edge)
     return p;
 }
 
-
+void standardA(map<uint64, bitset<256>>& edge)
+{
+    for (auto& i : edge) {
+        if (i.second.count() > 1) {
+            i.second.reset(Epsilon);
+        }
+    }
+}
 
 
