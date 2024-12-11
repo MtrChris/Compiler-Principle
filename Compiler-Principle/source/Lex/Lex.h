@@ -7,6 +7,7 @@
 #include <unordered_set>
 
 #define Epsilon 0
+#define MAXCH 256
 
 using uint64 =unsigned long long int;
 #define BEGIN(x) ((int)((uint64)x>>32))
@@ -16,10 +17,10 @@ using uint64 =unsigned long long int;
 
 class Automaton {
 public: 
-	std::map<uint64,std::bitset<256>>edges;
+	std::map<uint64,std::bitset<MAXCH>>edges;
 	int begin;
 	int end;
-	void edgeMerge(const std::map<uint64, std::bitset<256>>&);
+	void edgeMerge(const std::map<uint64, std::bitset<MAXCH>>&);
 	Automaton(char p);
 	Automaton() :begin(0), end(0) {};
 	Automaton(const Automaton* other);
@@ -27,8 +28,8 @@ public:
 };
 
 struct edges {
-	std::map<uint64, std::bitset<256>>::iterator begin;
-	std::map<uint64, std::bitset<256>>::iterator end;
+	std::map<uint64, std::bitset<MAXCH>>::iterator begin;
+	std::map<uint64, std::bitset<MAXCH>>::iterator end;
 };
 
 //LexTool.cpp
@@ -37,8 +38,8 @@ Automaton* merge(Automaton* a, Automaton* b);
 Automaton* closure(Automaton* p);
 Automaton* connect(Automaton* p, Automaton* q);
 void printNFA(Automaton* p, bool i = false, std::map<int, std::string>* q = NULL);
-edges getEdges(int state, std::map<uint64, std::bitset<256>>& edge);
-void standardA(std::map<uint64, std::bitset<256>>& edge);
+edges getEdges(int state, std::map<uint64, std::bitset<MAXCH>>& edge);
+void standardA(std::map<uint64, std::bitset<MAXCH>>& edge);
 
 //REtoNFA
 

@@ -5,7 +5,7 @@ using namespace std;
 //状态序号
 int stateIndex = 0;
 
-void Automaton::edgeMerge(const map<uint64, bitset<256>>&p)
+void Automaton::edgeMerge(const map<uint64, bitset<MAXCH>>&p)
 {
     for (auto& i : p) {
         this->edges[i.first] |=i.second;
@@ -40,7 +40,7 @@ Automaton::Automaton(const Automaton* other)
     this->begin = other->begin + c;
     this->end = other->end + c;
     for (auto& p : other->edges) {
-        this->edges.insert(pair<uint64, bitset<256>>{OFFSET(p.first,c), p.second});
+        this->edges.insert(pair<uint64, bitset<MAXCH>>{OFFSET(p.first,c), p.second});
     }
 }
 
@@ -111,7 +111,7 @@ void printNFA(Automaton* p,bool i ,map<int, string>* q)
 }
 
 //获得指定起点的所有边
-edges getEdges(int state,map<uint64,bitset<256>>& edge)
+edges getEdges(int state,map<uint64,bitset<MAXCH>>& edge)
 {
     struct edges p;
     p.begin=edge.lower_bound((uint64)state << 32);
@@ -119,7 +119,7 @@ edges getEdges(int state,map<uint64,bitset<256>>& edge)
     return p;
 }
 
-void standardA(map<uint64, bitset<256>>& edge)
+void standardA(map<uint64, bitset<MAXCH>>& edge)
 {
     for (auto& i : edge) {
         if (i.second.count() > 1) {

@@ -7,7 +7,7 @@ using namespace std;
 map<string, Automaton*>CompleteNFA;
 
 //可识别字符的位图
-bitset<256>recognizeCh;
+bitset<MAXCH>recognizeCh;
 
 //自动机序号，比unsigned char型的最大值要大
 int aIndex = 0xFFFF;
