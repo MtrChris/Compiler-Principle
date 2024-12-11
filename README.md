@@ -107,6 +107,56 @@ word>{letter}*
 6    4   d
 ```
 
+## 代码说明：
+
+自动机的定义：` Automaton`类 在`Lex.h`中
+
+类成员：
+
+` begin`:自动机的起始状态编号（可不要）
+
+`end`:自动机的结束状态编号（可不要）
+
+`map<uint64,bitset<MAXCH>>edges`:存储边的集合
+
+键为起点和终点的复合，64位`unsigned long long`。高32位为起点，低32位为终点。值为位图，存储发生状态转移的字符。
+
+辅助宏：
+
+```cpp
+using uint64 =unsigned long long int;
+//取起点
+#define BEGIN(x) ((int)((uint64)(x)>>32)) 
+//起点和终点合成边
+#define EDGE(x,y) (((uint64)(x)<<32)+(uint64)(y))
+//取终点
+#define END(x) ((int)(x))
+//将边x的起点和终点同时偏移y
+#define OFFSET(x,y) ((uint64)(x)+((uint64)(y)<<32)+y)
+```
+
+工具函数：
+
+```cpp
+struct edges {
+	std::map<uint64, std::bitset<MAXCH>>::iterator begin;
+	std::map<uint64, std::bitset<MAXCH>>::iterator end;
+}
+//从边集中获取以state为起点的边的范围[,)
+//LexTool.cpp
+edges getEdges(int state,map<uint64,bitset<MAXCH>>& edge)
+{
+    struct edges p;
+    p.begin=edge.lower_bound((uint64)state << 32);
+    p.end = edge.lower_bound((uint64)(state + 1) << 32);
+    return p;
+}
+```
+
+主控函数位于LexMaster.cpp
+
+指挥整个词法分析器的运行。
+
 <h1>LR分析表完成版本说明（编辑于12-09）</h1>
 <h2>测试说明</h2>
 

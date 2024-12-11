@@ -9,11 +9,15 @@
 #define Epsilon 0
 #define MAXCH 256
 
-using uint64 =unsigned long long int;
-#define BEGIN(x) ((int)((uint64)x>>32))
-#define EDGE(x,y) (((uint64)x<<32)+(uint64)y)
-#define END(x) ((int)x)
-#define OFFSET(x,y) (x+((uint64)y<<32)+y)
+using uint64 = unsigned long long int;
+//取起点
+#define BEGIN(x) ((int)((uint64)(x)>>32)) 
+//起点和终点合成边
+#define EDGE(x,y) (((uint64)(x)<<32)+(uint64)(y))
+//取终点
+#define END(x) ((int)(x))
+//将边x的起点和终点同时偏移y
+#define OFFSET(x,y) ((uint64)(x)+((uint64)(y)<<32)+y)
 
 class Automaton {
 public: 
