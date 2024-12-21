@@ -98,12 +98,15 @@ void printNFA(Automaton* p,bool i ,map<int, string>* q)
         }
         for (int i = 1; i < a.second.size(); i++) {
             if (a.second.test(i))
-                cout << (char)i;
+                // cout << (char)i;
+                cout << (char)i << ' ';
         }
         if (q != NULL) {
             auto k = q->find(END(a.first));
-            if (k != q->end())
-                cout << "  " << "ÖÕÌ¬:" << k->second;
+            if (k != q->end()) {
+                // cout << "  " << "ÖÕÌ¬£º" << k->second;
+                cout << "  " << "Final State:" << k->second;
+            }
         }
         cout << endl;
     }

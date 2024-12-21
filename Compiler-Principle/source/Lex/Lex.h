@@ -10,13 +10,13 @@
 #define MAXCH 256
 
 using uint64 = unsigned long long int;
-//È¡Æğµã
+//å–èµ·ç‚¹
 #define BEGIN(x) ((int)((uint64)(x)>>32)) 
-//ÆğµãºÍÖÕµãºÏ³É±ß
+//èµ·ç‚¹å’Œç»ˆç‚¹åˆæˆè¾¹
 #define EDGE(x,y) (((uint64)(x)<<32)+(uint64)(y))
-//È¡ÖÕµã
+//å–ç»ˆç‚¹
 #define END(x) ((int)(x))
-//½«±ßxµÄÆğµãºÍÖÕµãÍ¬Ê±Æ«ÒÆy
+//å°†è¾¹xçš„èµ·ç‚¹å’Œç»ˆç‚¹åŒæ—¶åç§»y
 #define OFFSET(x,y) ((uint64)(x)+((uint64)(y)<<32)+y)
 
 class Automaton {

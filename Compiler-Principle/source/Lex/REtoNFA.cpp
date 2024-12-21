@@ -46,7 +46,8 @@ void readRE(string path)
 	ifstream file(path);
 
 	if (!file.is_open()) {
-		throw exception("词法读取失败");
+		// throw exception("词法读取失败");
+		throw ios_base::failure("词法读取失败");
 	}
 
 	string line;
@@ -80,8 +81,10 @@ int REtoNFA(vector<int>RE)
 					//printNFA(automatons[i]);
 				}
 			}
-			else
-				throw exception("括号不匹配");
+			else {
+				// throw exception("括号不匹配");
+				throw runtime_error("括号不匹配");
+			}
 		}
 		else
 			break;
@@ -90,7 +93,8 @@ int REtoNFA(vector<int>RE)
 	for (;;) {
 		auto p = find(RE.begin(), RE.end(), '*');
 		if (p == RE.begin()) {
-			throw exception("为找到匹配的闭包");
+			// throw exception("未找到匹配的闭包");
+			throw runtime_error("未找到匹配的闭包");
 		}
 		else if (p == RE.end())
 			break;
@@ -111,8 +115,10 @@ int REtoNFA(vector<int>RE)
 			auto a = RE.begin(), b = a + 1;
 			if (*b == '|') {
 				auto c = b + 1;
-				if (c == RE.end())
-					throw exception("或运算未找到后项");
+				if (c == RE.end()) {
+					// throw exception("或运算未找到后项");
+					throw runtime_error("或运算未找到后项");
+				}
 				else {
 					auto p = merge(automatons[*a], automatons[*c]);
 					automatons[aIndex] = p;
@@ -155,12 +161,14 @@ Automaton* getNFA(string RE)
 				j++;
 			}
 			if (j >= RE.length()) {
-				throw exception("未找到匹配的右花括号");
+				// throw exception("未找到匹配的右花括号");
+				throw runtime_error("未找到匹配的右花括号");
 			}
 			string p = RE.substr(i + 1, j - i - 1);
 			auto q = CompleteNFA.find(p);
 			if (q == CompleteNFA.end()) {
-				throw exception("未找到匹配的短语");
+				// throw exception("未找到匹配的短语");
+				throw runtime_error("未找到匹配的短语");
 			}
 			RE.replace(i, j - i + 1, "");
 			auto r = new Automaton(q->second);
