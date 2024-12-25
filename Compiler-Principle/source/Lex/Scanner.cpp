@@ -2,6 +2,8 @@
 #include <fstream>
 using namespace std;
 
+
+extern bitset<MAXCH>recognizeCh;
 // 名字表 
 vector<NametabItem> nametab;
 
@@ -49,9 +51,24 @@ int readNext(Automaton* dfa, map<int, string> finalStates, NametabItem& item) {
 	while (currPos <= lineLength) {
 		char ch = line[currPos];	// 最后一个字符line[lineLength]是'\0' 
 		arrvState = getEndState(dfa, nowState, ch);	// 检查自动机是否能接受这个字符 
-
 		// 不能接受 
 		if (arrvState == -1) {
+			if (nowState == dfa->begin) {
+				if (ch == ' ') {
+					currPos++;
+					continue;
+				}
+				else if (!recognizeCh.test(ch)) {
+					newName += ch;
+					NametabItem nametabItem(-1, newName,newName, 0);
+					item = nametabItem;
+					currPos++;
+					if (currPos == lineLength) {
+						lineCount++, currPos = 0;
+					}
+					return NOT_FINISHED;
+				}
+			}
 			auto it_fs = finalStates.find(nowState);
 			if (it_fs != finalStates.end()) {
 				// 当前到达终态 
@@ -65,18 +82,19 @@ int readNext(Automaton* dfa, map<int, string> finalStates, NametabItem& item) {
 					NametabItem nametabItem(nameIndex++, newName, it_fs->second, 0);
 					nametab.push_back(nametabItem);	// 名字表中插入新词 
 					// 返回、输出新词 
-					cout << "识别新词："; nametabItem.print();
+					//cout << "识别新词："; nametabItem.print();
 					item = nametabItem;
 					return NOT_FINISHED;	// 还未结束 
 				}
 				else {
 					// 返回、输出已有词 
-					cout << "识别已有词："; nametab[res].print();
+					//cout << "识别已有词："; nametab[res].print();
 					item = nametab[res];
 					return NOT_FINISHED;	// 还未结束 
 				}
 			}
 			else {
+
 				// 当前没到终态，报错 
 				if (line[currPos] == '\0') {
 					cout << "第" << lineCount + 1 << "行第" << currPos + 1 << "列："
@@ -112,8 +130,9 @@ void readCode(string path) {
 	string line;
 	while (getline(file, line)) {
 		codes.push_back(line);
+		cout << line<<endl;
 	}
-
+	
 	// 关闭文件
 	file.close();
 }

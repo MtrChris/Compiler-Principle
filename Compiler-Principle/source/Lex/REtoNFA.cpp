@@ -196,6 +196,7 @@ Automaton* mergeMultiA(map<int, string>& finalStates)
 		//printNFA(i.second);
 		if (signA.find(i.first) != signA.end())
 			continue;
+
 		p->edges[EDGE(j, i.second->begin)].set(Epsilon);
 		p->edgeMerge(i.second->edges);
 		finalStates.insert(pair<int, string>{i.second->end, i.first});

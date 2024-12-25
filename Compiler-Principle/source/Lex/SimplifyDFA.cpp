@@ -32,9 +32,10 @@ void getAllStates(Automaton* a) {
 
 // 找状态 st 接受字符 ch 转移到什么状态 
 int getEndState(Automaton* a, int st, int ch) {
-    for (auto& edge : a->edges) {
-        if (BEGIN(edge.first) == st && edge.second.test(ch)) {
-            return END(edge.first);
+    auto e = getEdges(st, a->edges);
+    for (auto i = e.begin; i != e.end;i++) {
+        if (BEGIN(i->first) == st && i->second.test(ch)) {
+            return END(i->first);
         }
     }
     return -1; // 有可能接受不了 ch 
