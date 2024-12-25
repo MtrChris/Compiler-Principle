@@ -84,4 +84,5 @@ int getEndState(Automaton* a, int st, int ch);
 
 // Scanner.cpp
 void readCode(std::string path);
-int readNext(Automaton* dfa, std::map<int, std::string> finalStates, NametabItem& item);
+int readNext(NametabItem& p);
+void prepareLex();

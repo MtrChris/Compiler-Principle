@@ -2,7 +2,8 @@
 #include <fstream>
 using namespace std;
 
-
+extern Automaton* dfa;
+extern  map<int, string> finalStates;
 extern bitset<MAXCH>recognizeCh;
 // 名字表 
 vector<NametabItem> nametab;
@@ -29,7 +30,7 @@ int findName(string name) {
 // 返回值: SYN_ERROR --> 语法错误 
 //		   NOT_FINISHED --> 读取未完成 
 //		   FINISHED --> 读取完成 
-int readNext(Automaton* dfa, map<int, string> finalStates, NametabItem& item) {
+int readNext(NametabItem& item) {
 	string newName = ""; // 切出来的词 
 
 	int beginState = dfa->begin;
