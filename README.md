@@ -8,6 +8,8 @@
 
 完成DFA的化简
 
+完成readNext()函数
+
 ## 使用说明
 
 在随意txt中写入文法，目前仅支持ASCII码。
@@ -47,6 +49,12 @@ word>{letter}*
 
 同时，使用的标识符必须在前面已经定义过。
 
+**readNext测试：**
+
+按上面的步骤写入文法后，在随意txt中写入代码，替换codaFilePath路径。
+
+可以参考LexMaster.cpp中的readNext调用方式。
+
 ## 测试说明：
 
 目前完成了NFA到DFA的转换，DFA的化简，“分叉情况”已经解决
@@ -56,6 +64,12 @@ word>{letter}*
 ```
 345>a|b|c
 123>aabb{345}
+```
+
+```
+aabbcaabbc
+aabbb
+aabba
 ```
 
 化简前结果：（出现分叉）
@@ -73,10 +87,21 @@ word>{letter}*
 化简后结果：（没有分叉）
 
 ```
-0    0   a
-0    1   b
-1    2   b
-2    3   a b c   Final State:123
+0    4   b
+1    0   b
+2    1   a
+3    2   a
+4    5   a b c   Final State:123
+```
+
+readNext测试：
+
+```
+识别新词：序号 0，名字 aabbc，类型 123，值 0
+识别已有词：序号 0，名字 aabbc，类型 123，值 0
+识别新词：序号 1，名字 aabbb，类型 123，值 0
+识别新词：序号 2，名字 aabba，类型 123，值 0
+扫描已完成！
 ```
 
 测试用例2：
@@ -121,16 +146,16 @@ word>{letter}*
 化简后结果：
 
 ```
-0    0   b c d
-0    1   a
-1    0   c d
-1    1   a
-1    2   b
-2    0   b d
-2    1   a
+0    0   a
+0    1   c d
+0    2   b
+1    0   a
+1    1   b c d
+2    0   a
+2    1   b d
 2    3   c   Final State:123
-3    0   b c d
-3    1   a
+3    0   a
+3    1   b c d
 ```
 
 ## 代码说明：
@@ -146,6 +171,18 @@ word>{letter}*
 `map<uint64,bitset<MAXCH>>edges`:存储边的集合
 
 键为起点和终点的复合，64位`unsigned long long`。高32位为起点，低32位为终点。值为位图，存储发生状态转移的字符。
+
+名字表项的定义：` NametabItem`类 在`Lex.h`中
+
+类成员：
+
+` index`:序号（从0开始）
+
+`name`:名字，如abc 
+
+`type`:类型，如123>abc的123
+
+`value`:值
 
 辅助宏：
 

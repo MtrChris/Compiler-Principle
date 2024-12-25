@@ -72,31 +72,8 @@ bool split(Automaton* a, unordered_set<int>& s) {
                 stateEndIndex.insert(pair<int, int>{state, splitSetsIndex[endState]});
             }
             else {
-                endIndex.insert(-1); // 不能接受的状态记为 -1 
-                stateEndIndex.insert(pair<int, int>{state, -1});
-            }
-        }
-
-        /*****************************************************************
-        *  对“不接受”的状态进行处理： 
-        *  1. 如果均为“不接受”的状态，不进行处理； 
-        *  2. 否则，进行以下处理：
-        *     a. 如果有转移到本集合的状态，-1 优先改为本集合下标（视为转移到本集合） 
-        *     b. 如果没有， - 1 将改为首个非 - 1 的下标（视为转移到此集合） 
-        ******************************************************************/
-        if (endIndex.size() > 1 && endIndex.find(-1) != endIndex.end()) {
-            endIndex.erase(-1);
-            if (endIndex.find(sIndex) != endIndex.end()) {
-                for (auto& m : stateEndIndex) {
-                    if (m.second == -1)
-                        m.second = sIndex;
-                }
-            }
-            else {
-                for (auto& m : stateEndIndex) {
-                    if (m.second == -1)
-                        m.second = *(endIndex.begin());
-                }
+                endIndex.insert(sIndex); // 不能接受的状态记为转移到本集合 
+                stateEndIndex.insert(pair<int, int>{state, sIndex});
             }
         }
 

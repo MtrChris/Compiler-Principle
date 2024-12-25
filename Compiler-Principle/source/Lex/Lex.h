@@ -5,18 +5,22 @@
 #include <string>
 #include <iostream>
 #include <unordered_set>
+#include <algorithm>
 
 #define Epsilon 0
 #define MAXCH 256
+#define SYN_ERROR -1
+#define NOT_FINISHED 0
+#define FINISHED 1
 
 using uint64 = unsigned long long int;
-//å–èµ·ç‚¹
+//È¡Æğµã
 #define BEGIN(x) ((int)((uint64)(x)>>32)) 
-//èµ·ç‚¹å’Œç»ˆç‚¹åˆæˆè¾¹
+//ÆğµãºÍÖÕµãºÏ³É±ß
 #define EDGE(x,y) (((uint64)(x)<<32)+(uint64)(y))
-//å–ç»ˆç‚¹
+//È¡ÖÕµã
 #define END(x) ((int)(x))
-//å°†è¾¹xçš„èµ·ç‚¹å’Œç»ˆç‚¹åŒæ—¶åç§»y
+//½«±ßxµÄÆğµãºÍÖÕµãÍ¬Ê±Æ«ÒÆy
 #define OFFSET(x,y) ((uint64)(x)+((uint64)(y)<<32)+y)
 
 class Automaton {
@@ -36,6 +40,26 @@ struct edges {
 	std::map<uint64, std::bitset<MAXCH>>::iterator end;
 };
 
+struct NametabItem {
+	int index;				// ĞòºÅ£¬´Ó0¿ªÊ¼ 
+	std::string name;		// Ãû×Ö£¬Èçabc 
+	std::string type;		// ÀàĞÍ£¬Èç123>abcµÄ123 
+	int value;				// Öµ£¬Ä¬ÈÏÊÇÕûÊı0£¬¸ù¾İĞèÒªĞŞ¸Ä
+	NametabItem() {};
+	NametabItem(int index, std::string name, std::string type, int value) {
+		this->index = index;
+		this->name = name;
+		this->type = type;
+		this->value = value;
+	}
+	void print() {
+		std::cout << "ĞòºÅ " << this->index
+			<< "£¬Ãû×Ö " << this->name
+			<< "£¬ÀàĞÍ " << this->type
+			<< "£¬Öµ " << this->value << std::endl;
+	}
+};
+
 //LexTool.cpp
 
 Automaton* merge(Automaton* a, Automaton* b);
@@ -53,3 +77,11 @@ Automaton* mergeMultiA(std::map<int, std::string>& finalStates);
 
 //NFAtoDFA.cpp
 Automaton* NFAtoDFA(Automaton* oldA, std::map<int, std::string>& finalStates, std::map<int, std::string>& newFinalStates);
+
+// SimplifyDFA.cpp
+Automaton* simplifyDFA(Automaton* oldA, std::map<int, std::string>& finalStates, std::map<int, std::string>& simplifiedFinalStates);
+int getEndState(Automaton* a, int st, int ch);
+
+// Scanner.cpp
+void readCode(std::string path);
+int readNext(Automaton* dfa, std::map<int, std::string> finalStates, NametabItem& item);
