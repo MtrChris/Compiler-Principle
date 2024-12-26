@@ -65,17 +65,17 @@ void readRE(string path)
 //getNFA的递归子程序
 int REtoNFA(vector<int>RE)
 {
-	if (RE.size()==0)
+	if (RE.size() == 0)
 		return -1;
 	//处理括号
 	for (;;) {
 		auto p = find(RE.rbegin(), RE.rend(), '(');
 		if (p != RE.rend()) {
-			auto b = p.base()-1;
+			auto b = p.base() - 1;
 			auto d = find(b, RE.end(), ')');
 			if (d != RE.end()) {
-				int i=REtoNFA(vector<int>(b+1,d));
-				auto a = RE.erase(b, d+1);
+				int i = REtoNFA(vector<int>(b + 1, d));
+				auto a = RE.erase(b, d + 1);
 				if (i != -1) {
 					RE.insert(a, i);
 					//printNFA(automatons[i]);
@@ -99,10 +99,10 @@ int REtoNFA(vector<int>RE)
 		else if (p == RE.end())
 			break;
 		else {
-			auto q=closure(automatons[*(p - 1)]);
+			auto q = closure(automatons[*(p - 1)]);
 			automatons[aIndex] = q;
 			//printNFA(q);
-			auto a =RE.erase(p - 1, p+1);
+			auto a = RE.erase(p - 1, p + 1);
 			RE.insert(a, aIndex++);
 
 		}
@@ -212,7 +212,7 @@ void processLex()
 		auto j = i.find_first_of('>');
 		auto k = i.substr(j + 1, i.size() - j - 1);
 		auto p = i.substr(0, j);
-		if (k.find('(')==string::npos&&k.find('{')== string::npos &&k.find('*')== string::npos) {
+		if (k.find('(') == string::npos && k.find('{') == string::npos && k.find('*') == string::npos) {
 			Automaton* a = new Automaton();
 			a->begin = stateIndex++;
 			a->end = stateIndex++;

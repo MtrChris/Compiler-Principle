@@ -5,10 +5,10 @@ using namespace std;
 //状态序号
 int stateIndex = 0;
 
-void Automaton::edgeMerge(const map<uint64, bitset<MAXCH>>&p)
+void Automaton::edgeMerge(const map<uint64, bitset<MAXCH>>& p)
 {
     for (auto& i : p) {
-        this->edges[i.first] |=i.second;
+        this->edges[i.first] |= i.second;
     }
 }
 
@@ -21,13 +21,13 @@ Automaton::Automaton(char p)
 
 Automaton::Automaton(const Automaton* other)
 {
-    int min = INT_MAX,a=0,b=0;
+    int min = INT_MAX, a = 0, b = 0;
     unordered_set<int> s;
     for (auto& p : other->edges) {
         a = BEGIN(p.first);
         b = END(p.first);
-        min =a < min ? a : min;
-        min =b< min ? b : min;
+        min = a < min ? a : min;
+        min = b < min ? b : min;
         if (s.find(a) == s.end()) {
             s.insert(a);
         }
@@ -40,18 +40,18 @@ Automaton::Automaton(const Automaton* other)
     this->begin = other->begin + c;
     this->end = other->end + c;
     for (auto& p : other->edges) {
-        this->edges.insert(pair<uint64, bitset<MAXCH>>{OFFSET(p.first,c), p.second});
+        this->edges.insert(pair<uint64, bitset<MAXCH>>{OFFSET(p.first, c), p.second});
     }
 }
 
 
 // 自动机的并运算
-Automaton* merge(Automaton* a,Automaton*b)
+Automaton* merge(Automaton* a, Automaton* b)
 {
     int begin = stateIndex++, end = stateIndex++;
     a->edges[EDGE(begin, a->begin)].set(Epsilon);
     a->edges[EDGE(begin, b->begin)].set(Epsilon);
-    a->edges[EDGE(a->end,end)].set(Epsilon);
+    a->edges[EDGE(a->end, end)].set(Epsilon);
     a->edges[EDGE(b->end, end)].set(Epsilon);
     a->edgeMerge(b->edges);
     delete b;
@@ -63,11 +63,11 @@ Automaton* merge(Automaton* a,Automaton*b)
 
 
 //生成自动机的闭包
-Automaton* closure(Automaton* p) 
+Automaton* closure(Automaton* p)
 {
-    int begin =stateIndex++, end =stateIndex++;
+    int begin = stateIndex++, end = stateIndex++;
     p->edges[EDGE(begin, p->begin)].set(Epsilon);
-    p->edges[EDGE(p->end,end)].set(Epsilon);
+    p->edges[EDGE(p->end, end)].set(Epsilon);
     p->edges[EDGE(p->end, p->begin)].set(Epsilon);
     p->edges[EDGE(begin, end)].set(Epsilon);
     p->begin = begin;
@@ -77,7 +77,7 @@ Automaton* closure(Automaton* p)
 
 
 //连接两个自动机
-Automaton* connect(Automaton* p,Automaton*q)
+Automaton* connect(Automaton* p, Automaton* q)
 {
     p->edges[EDGE(p->end, q->begin)].set(Epsilon);
     p->end = q->end;
@@ -87,7 +87,7 @@ Automaton* connect(Automaton* p,Automaton*q)
 }
 
 //打印自动机
-void printNFA(Automaton* p,bool i ,map<int, string>* q)
+void printNFA(Automaton* p, bool i, map<int, string>* q)
 {
     if (i) {
         cout << p->begin << endl;
@@ -116,10 +116,10 @@ void printNFA(Automaton* p,bool i ,map<int, string>* q)
 }
 
 //获得指定起点的所有边
-edges getEdges(int state,map<uint64,bitset<MAXCH>>& edge)
+edges getEdges(int state, map<uint64, bitset<MAXCH>>& edge)
 {
     struct edges p;
-    p.begin=edge.lower_bound((uint64)state << 32);
+    p.begin = edge.lower_bound((uint64)state << 32);
     p.end = edge.lower_bound((uint64)(state + 1) << 32);
     return p;
 }
@@ -133,11 +133,11 @@ void standardA(map<uint64, bitset<MAXCH>>& edge)
     }
 }
 
-LexException::LexException(const std::string &msg)
+LexException::LexException(const std::string& msg)
 {
     _msg = msg;
 }
-const char *LexException::what()
+const char* LexException::what()
 {
     return _msg.c_str();
 }
