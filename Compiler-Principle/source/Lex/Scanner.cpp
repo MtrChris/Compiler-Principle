@@ -1,15 +1,14 @@
 #include "Lex.h"
 #include <fstream>
+#include <sstream>
 using namespace std;
 
-extern Automaton* dfa;
-extern  map<int, string> finalStates;
 extern bitset<MAXCH>recognizeCh;
 // 名字表 
-vector<NametabItem> nametab;
-
+extern vector<NametabItem> nametab;
+extern vector<pair<Automaton*, map<int, string>>>DFAS;
 // 存储代码文件 
-vector<string> codes;
+extern vector<string> codes;
 
 int nameIndex = 0;	// 名字序号（从0开始） 
 int currPos = 0;	// 当前字符下标即列数（从0开始） 
@@ -30,9 +29,9 @@ int findName(string name) {
 // 返回值: SYN_ERROR --> 语法错误 
 //		   NOT_FINISHED --> 读取未完成 
 //		   FINISHED --> 读取完成 
-int readNext(NametabItem& item) {
+int readnext(NametabItem& item,Automaton* dfa,map<int,string>& finalStates,string& error) {
 	string newName = ""; // 切出来的词 
-
+	//printNFA(dfa);
 	int beginState = dfa->begin;
 	int nowState = beginState;
 	int arrvState;
@@ -81,31 +80,29 @@ int readNext(NametabItem& item) {
 				int res = findName(newName);	// 检查是否是新词 
 				if (res == -1) {
 					NametabItem nametabItem(nameIndex++, newName, it_fs->second, 0);
-					nametab.push_back(nametabItem);	// 名字表中插入新词 
-					// 返回、输出新词 
-					//cout << "识别新词："; nametabItem.print();
 					item = nametabItem;
 					return NOT_FINISHED;	// 还未结束 
 				}
 				else {
-					// 返回、输出已有词 
-					//cout << "识别已有词："; nametab[res].print();
+
 					item = nametab[res];
 					return NOT_FINISHED;	// 还未结束 
 				}
 			}
 			else {
-
+				ostringstream oss;
 				// 当前没到终态，报错 
 				if (line[currPos] == '\0') {
-					cout << "第" << lineCount + 1 << "行第" << currPos + 1 << "列："
+					oss << "第" << lineCount + 1 << "行第" << currPos + 1 << "列："
 						<< codes[lineCount] << " "
-						<< "语法错误：缺少字符。" << endl;
+						<< "语法错误：缺少字符。";
+					error = oss.str();
 				}
 				else {
-					cout << "第" << lineCount + 1 << "行第" << currPos + 1 << "列："
+					oss << "第" << lineCount + 1 << "行第" << currPos + 1 << "列："
 						<< codes[lineCount] << " "
 						<< "语法错误：\"" << line[currPos] << "\"" << endl;
+					error = oss.str();
 				}
 				return SYN_ERROR;	// 退出并返回语法错误 
 			}
@@ -136,4 +133,51 @@ void readCode(string path) {
 	
 	// 关闭文件
 	file.close();
+}
+
+struct state {
+	int a;
+	int b;
+	int c;
+	NametabItem p;
+	int r;
+};
+
+int readNext(NametabItem& item) 
+{
+
+	string e;
+	NametabItem a;
+	vector<state>p;
+	p.push_back(state{ nameIndex, currPos, lineCount,NametabItem(), 0 });
+	for (auto& i : DFAS) {
+		nameIndex = p[0].a;
+		currPos = p[0].b;
+		lineCount = p[0].c;
+		int k = 0;
+		k= readnext(a, i.first, i.second,e);
+		if (k == NOT_FINISHED ) {
+			p.push_back(state{ nameIndex, currPos, lineCount,a, k });
+		}
+		
+	}
+	
+	if (p.size()==1) {
+		cout << e;
+		return SYN_ERROR;
+	}
+	auto it = max_element(p.begin(), p.end(), [](state a, state b) {
+		if (a.c < b.c)
+			return true;
+		else if (a.c == b.c)
+			return a.b < b.b;
+		else
+			return false;
+		});
+	item = it->p;
+	nameIndex = it->a;
+	currPos = it->b;
+	lineCount = it->c;
+	nametab.push_back(item);	
+	return it->r;
 }

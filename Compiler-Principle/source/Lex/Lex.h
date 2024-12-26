@@ -69,11 +69,16 @@ void printNFA(Automaton* p, bool i = false, std::map<int, std::string>* q = NULL
 edges getEdges(int state, std::map<uint64, std::bitset<MAXCH>>& edge);
 void standardA(std::map<uint64, std::bitset<MAXCH>>& edge);
 
-//REtoNFA
-
+//LexMaster.cpp
 void readRE(std::string path);
+void GRC(std::string line);
+void prepareLex();
 void processLex();
+
+//REtoNFA
 Automaton* mergeMultiA(std::map<int, std::string>& finalStates);
+Automaton* getNFA(std::string RE);
+int REtoNFA(std::vector<int>RE);
 
 //NFAtoDFA.cpp
 Automaton* NFAtoDFA(Automaton* oldA, std::map<int, std::string>& finalStates, std::map<int, std::string>& newFinalStates);

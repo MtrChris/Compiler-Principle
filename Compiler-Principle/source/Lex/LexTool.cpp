@@ -3,7 +3,7 @@ using namespace std;
 
 //全局通用，用完递增，永远不会重复
 //状态序号
-int stateIndex = 0;
+extern int stateIndex;
 
 void Automaton::edgeMerge(const map<uint64, bitset<MAXCH>>&p)
 {
