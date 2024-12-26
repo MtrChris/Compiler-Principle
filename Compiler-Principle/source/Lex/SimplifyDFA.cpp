@@ -105,6 +105,31 @@ bool split(Automaton* a, unordered_set<int>& s) {
     return false;
 }
 
+// 分成终态集和非终态集 
+// 如果有多个不同含义的终态，也应分开 
+void initSplitSets(const map<int, string>& finalStates) {
+    unordered_set<int> nonFinalStatesSet; // 非终态集 
+    for (const auto& state : allStates) {
+        if (finalStates.find(state) == finalStates.end()) {
+            nonFinalStatesSet.insert(state);
+        }
+    }
+    splitSets.push_back(nonFinalStatesSet);
+    
+    // 反过来创建一个 map，方便插入 
+    unordered_map<string, unordered_set<int>> groupedFinalStates;
+    for (const auto& pair : finalStates) {
+        int leftKey = pair.first;
+        string rightValue = pair.second;
+        groupedFinalStates[rightValue].insert(leftKey);
+    }
+    
+    // 提取 unordered_set 插入到 splitSets 中 
+    for (const auto& group : groupedFinalStates) {
+        splitSets.push_back(group.second);
+    }
+}
+
 Automaton* simplifyDFA(Automaton* oldA, map<int, string>& finalStates, map<int, string>& simplifiedFinalStates) {
     Automaton* newA = new Automaton();
     
@@ -112,16 +137,7 @@ Automaton* simplifyDFA(Automaton* oldA, map<int, string>& finalStates, map<int, 
     getAllStates(oldA);
 
     // 先分成非终态集和终态集 
-    unordered_set<int> nonFinalStatesSet;
-    unordered_set<int> finalStatesSet;
-    for (auto& state : allStates) {
-        if (finalStates.find(state) != finalStates.end())
-            finalStatesSet.insert(state);
-        else
-            nonFinalStatesSet.insert(state);
-    }
-    splitSets.push_back(nonFinalStatesSet); // 下标 0 
-    splitSets.push_back(finalStatesSet);    // 下标 1 
+    initSplitSets(finalStates);
 
     // 记录状态所在的集合的下标 
     getSplitSetsIndex();
@@ -176,8 +192,6 @@ Automaton* simplifyDFA(Automaton* oldA, map<int, string>& finalStates, map<int, 
         );
         if (it != splitSets.end()) {
             int endStateIndex = distance(splitSets.begin(), it);
-            newA->end = endStateIndex; // 多个终态时，会出错 
-            //cout << "end state: " << endStateIndex << endl; // 测试一下 
             simplifiedFinalStates.insert(pair<int, string>{endStateIndex, state.second});
         } else {
             cout << "Error: no end state (" << endState << ") found." << endl;

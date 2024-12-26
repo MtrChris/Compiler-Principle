@@ -39,8 +39,10 @@ void prepareLex()
 		readRE(path);
 		processLex();
 		map<int, string>f;
+		map<int, string>newf;
 		auto totalA = mergeMultiA(f);
-		dfa = NFAtoDFA(totalA, f, finalStates);
+		dfa = NFAtoDFA(totalA, f, newf);
+		dfa = simplifyDFA(dfa, newf, finalStates)
 		readCode(codeFilePath);
 	}
 	catch (exception e) {
