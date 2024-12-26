@@ -5,6 +5,7 @@
 #include <queue>
 #include <stack>
 #include <fstream>
+#include <iomanip>
 
 using namespace std;
 
@@ -26,6 +27,10 @@ int AlgElement::getId() const
 bool AlgElement::operator==(const AlgElement &right)
 {
   return isTerminal == right.getIsTerminal() && id == right.getId() && id != -1;
+}
+
+void AlgElement::print(ofstream& outFile) const
+{
 }
 
 // -------- ElementDict类的成员函数实现 ---------
@@ -189,11 +194,11 @@ int ElementDict::getDictLength() const
   return elemList.size();
 }
 
-void ElementDict::print() const
+void ElementDict::print(std::ofstream& outFile) const
 {
   for (int i = 0; i < elemList.size(); i++)
   {
-    elemList[i]->print();
+    elemList[i]->print(outFile);
   }
 }
 
@@ -232,6 +237,11 @@ bool TerminalElement::operator==(const AlgElement &right)
   return type == tRight->type;
 }
 
+void TerminalElement::print(std::ofstream& outFile) const
+{
+  outFile << "id: " << getId() << " type: " << type << " " << " val: " << val << std::endl;
+}
+
 // -------- NonTerminalElement类的成员函数实现 --------
 
 NonTerminalElement::NonTerminalElement(string _name) : name(_name)
@@ -247,6 +257,11 @@ bool NonTerminalElement::operator==(const AlgElement &right)
     return false;
   }
   return name == nRight->name;
+}
+
+void NonTerminalElement::print(std::ofstream& outFile) const
+{
+  outFile << "id: " << getId() << " name: " << name << std::endl;
 }
 
 // -------- ProductionAlg类的成员函数实现 --------
@@ -712,41 +727,41 @@ const LRItem &LRChart::get(int state, int ch) const
   return chart[state][ch];
 }
 
-void LRChart::print() const
+void LRChart::print(ofstream& outFile) const
 {
-  cout << setiosflags(ios::left);
-  cout << setw(4) << " ";
+  outFile << setiosflags(ios::left);
+  outFile << setw(4) << " ";
   for (int ch = 0; ch < parser->getDict().getDictLength(); ch++)
   {
-    cout << setw(4) << ch;
+    outFile << setw(4) << ch;
   }
-  cout << endl;
+  outFile << endl;
   for (int state = 0; state < parser->getDFA().getNodes().size(); state++)
   {
-    cout << setw(4) << state;
+    outFile << setw(4) << state;
     for (int ch = 0; ch < parser->getDict().getDictLength(); ch++)
     {
       const LRItem &item = chart[state][ch];
       switch (item.action)
       {
       case ACCEPT:
-        cout << "ACC ";
+        outFile << "ACC ";
         break;
       case ERROR:
-        cout << "ERR ";
+        outFile << "ERR ";
         break;
       case SHIFT:
-        cout << "S" << setw(3) << item.index;
+        outFile << "S" << setw(3) << item.index;
         break;
       case REDUCE:
-        cout << "R" << setw(3) << item.index;
+        outFile << "R" << setw(3) << item.index;
         break;
       case GOTO:
-        cout << "G" << setw(3) << item.index;
+        outFile << "G" << setw(3) << item.index;
         break;
       }
     }
-    cout << endl;
+    outFile << endl;
   }
 }
 
@@ -771,16 +786,16 @@ const ElementDict &GrammarParser::getDict() const
   return dict;
 }
 
-void GrammarParser::printAlgs() const
+void GrammarParser::printAlgs(ofstream& outFile) const
 {
   for (int i = 0; i < algs.size(); i++)
   {
-    cout << algs[i].id << ": " << algs[i].leftElem->getId() << " -> ";
+    outFile << algs[i].id << ": " << algs[i].leftElem->getId() << " -> ";
     for (int j = 0; j < algs[i].rightAlg.size(); j++)
     {
-      cout << algs[i].rightAlg[j]->getId() << " ";
+      outFile << algs[i].rightAlg[j]->getId() << " ";
     }
-    cout << endl;
+    outFile << endl;
   }
 }
 
@@ -809,17 +824,8 @@ void GrammarParser::processGrammarRule()
     dfa.buildDFA();
     chart.init(this);
     chart.build();
-
+    printLog();
     // 以下为打印操作
-    cout << "---------- 产生式表 ----------" << endl;
-    printAlgs();
-    cout << endl;
-    cout << "---------- 符号表 -------- " << endl;
-    dict.print();
-    cout << endl;
-    cout << "---------- LR分析表 -----------" << endl;
-    chart.print();
-    cout << endl;
   }
   catch (InputException &e)
   {
@@ -834,21 +840,25 @@ void GrammarParser::LR1Main()
   stack<Expr *> symbolStack;
   stateStack.push(0);
   CodeGenerator codegenerator;
+  int curTerminal = -1;
+  int curSymbol = -1;
   while (true)
   {
+    if(curSymbol == -1){
+      NametabItem curItem;
+      int res = readNext(curItem);
+      if(res == FINISHED){
+        curTerminal = ENDCHID;
+      }
+      else{
+        curTerminal = dict.findElem(curItem.type, curItem.name);
+        cout << curItem.type << " " << curItem.name << endl; // !!! debug
+      }
+      curSymbol = curTerminal;
+    }
     int currentState = stateStack.top();
-    NametabItem curItem;
-    int res = readNext(curItem);
-    TerminalElement* curSymbol = nullptr;
-    if(res == FINISHED){
-      curSymbol = new TerminalElement(*ElementDict::ENDCH);
-    }
-    else{
-      curSymbol = new TerminalElement(curItem.type, curItem.name);
-      cout << curItem.type << " " << curItem.name << endl;
-    }
-    int currentSymbolNum = dict.findElem(*curSymbol);
-    LRItem item = chart.get(currentState, currentSymbolNum);
+    AlgElement* curElement = dict.getElem(curSymbol);
+    LRItem item = chart.get(currentState, curSymbol);
 
     switch (item.action)
     {
@@ -856,23 +866,28 @@ void GrammarParser::LR1Main()
     {
       stateStack.push(item.index);
       Expr *shiftE = new Expr();
-      if(curSymbol->getType() == SYMBOL){
-        shiftE->place = curSymbol->getVal();
+      TerminalElement* terminalPtr = dynamic_cast<TerminalElement*>(curElement);
+      if(terminalPtr && terminalPtr->getType() == SYMBOL){
+        shiftE->place = terminalPtr->getVal();
       }
       symbolStack.push(shiftE);
+      curSymbol = -1;
       break;
     }
     case REDUCE:
     {
       ProductionAlg prod = getProductionAlg(item.index);
-      int gotoState = chart.get(stateStack.top(), currentSymbolNum).index;
-      stateStack.push(gotoState);
-      codegenerator.GenerateCode(prod, stateStack, symbolStack);
+      for(int i = 0; i < prod.getAlgLength(); i++){
+        stateStack.pop();
+      }
+      // codegenerator.GenerateCode(prod, stateStack, symbolStack);
+      curSymbol = prod.leftElem->getId();
       break;
     }
 
     case GOTO:
       stateStack.push(item.index);
+      curSymbol = curTerminal;
       break;
 
     case ACCEPT:
@@ -886,6 +901,20 @@ void GrammarParser::LR1Main()
       return;
     }
   }
+}
+
+void GrammarParser::printLog() const
+{
+  ofstream& outFile = LogHandler::getInstance();
+  cout << "---------- 产生式表 ----------" << endl;
+  printAlgs(outFile);
+  cout << endl;
+  cout << "---------- 符号表 -------- " << endl;
+  dict.print(outFile);
+  cout << endl;
+  cout << "---------- LR分析表 -----------" << endl;
+  chart.print(outFile);
+  cout << endl;
 }
 
 // -------- GrammarException类的成员函数实现 --------

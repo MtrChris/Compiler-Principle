@@ -4,8 +4,10 @@
 #include <set>
 #include <map>
 #include <exception>
-#include <iostream> // !!! debug
-#include <iomanip>  // !!! debug
+#include <fstream>
+#include "OutputHandler.h"
+
+#define GRAMMARINPUTPATH  "GrammarRule.txt"
 
 #define EMPTYWORDID 1
 #define ENDCHID 2
@@ -27,7 +29,7 @@ public:
   inline bool getIsTerminal() const;
   inline int getId() const;
   virtual bool operator==(const AlgElement &right);
-  virtual void print() {} // !!! debug
+  virtual void print(std::ofstream& outFile) const;
 };
 
 // 终结符类
@@ -41,10 +43,7 @@ public:
   bool operator==(const AlgElement &right) override;
   inline const std::string& getType() const;
   inline const std::string& getVal() const;
-  void print()
-  {
-    std::cout << "id: " << getId() << " type: " << type << " " << " val: " << val << std::endl;
-  }
+  void print(std::ofstream& outFile) const;
 };
 
 // 非终结符类
@@ -54,10 +53,7 @@ class NonTerminalElement : public AlgElement
 public:
   NonTerminalElement(std::string _name = "");
   bool operator==(const AlgElement &right) override;
-  void print()
-  {
-    std::cout << "id: " << getId() << " name: " << name << std::endl;
-  }
+  void print(std::ofstream& outFile) const;
 };
 
 // 元素表类的定义，存储产生式中的所有元素的信息
@@ -92,7 +88,7 @@ public:
   void calculateFirst();
   inline const std::set<int> &getFirstSet(int id) const;
   inline int getDictLength() const;
-  void print() const;
+  void print(std::ofstream& outFile) const;
   ~ElementDict();
 };
 
@@ -214,7 +210,7 @@ public:
   void init(GrammarParser *_parser);
   void build();
   inline const LRItem &get(int state, int ch) const;
-  void print() const;
+  void print(std::ofstream& outFile) const;
 };
 
 // 语法分析器类
@@ -226,13 +222,14 @@ class GrammarParser
   ElementDict dict;
   LRChart chart;
   GrammarDFA dfa;
+  void printLog() const;
 
 public:
   inline const ProductionAlg &getProductionAlg(int index);
   inline const std::vector<int> &getClassifiedAlgs(int ch);
   inline const GrammarDFA &getDFA() const;
   inline const ElementDict &getDict() const;
-  void printAlgs() const;
+  void printAlgs(std::ofstream& outFile) const;
   void processGrammarRule();
   void LR1Main();
 };

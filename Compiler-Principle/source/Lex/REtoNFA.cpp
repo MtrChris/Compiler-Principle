@@ -1,35 +1,31 @@
-#include "Lex.h"
+﻿#include "Lex.h"
 #include <algorithm>
 #include <fstream>
 using namespace std;
 
-//��ʶ��Ķ�����Զ���֮��Ķ�Ӧ��ϵ
 extern map<string, Automaton*>CompleteNFA;
 
-//��ʶ���ַ���λͼ
+
 extern bitset<MAXCH>recognizeCh;
 
-//�Զ�����ţ���unsigned char�͵����ֵҪ��
 extern int aIndex;
 
-//�Զ���ռλ���ļ���
+
 extern map<int, Automaton*>automatons;
 
-//�洢�ʷ�
 extern vector<string>lexs;
 
-//��¼��������ʶ�����Զ���
 extern unordered_set<string>signA;
 
 extern int stateIndex;
 
 
-//getNFA�ĵݹ��ӳ���
+
 int REtoNFA(vector<int>RE)
 {
 	if (RE.size() == 0)
 		return -1;
-	//��������
+
 	for (;;) {
 		auto p = find(RE.rbegin(), RE.rend(), '(');
 		if (p != RE.rend()) {
@@ -40,23 +36,19 @@ int REtoNFA(vector<int>RE)
 				auto a = RE.erase(b, d + 1);
 				if (i != -1) {
 					RE.insert(a, i);
-					//printNFA(automatons[i]);
 				}
 			}
 			else {
-				// throw exception("���Ų�ƥ��");
-				throw LexException("���Ų�ƥ��");
+				throw LexException("括号不匹配");
 			}
 		}
 		else
 			break;
 	}
-	//�����հ�
 	for (;;) {
 		auto p = find(RE.begin(), RE.end(), '*');
 		if (p == RE.begin()) {
-			// throw exception("δ�ҵ�ƥ��ıհ�");
-			throw LexException("δ�ҵ�ƥ��ıհ�");
+			throw LexException("未找到匹配的闭包");
 		}
 		else if (p == RE.end())
 			break;
@@ -69,7 +61,6 @@ int REtoNFA(vector<int>RE)
 
 		}
 	}
-	//��������
 	for (;;) {
 		if (RE.size() == 1)
 			break;
@@ -78,8 +69,7 @@ int REtoNFA(vector<int>RE)
 			if (*b == '|') {
 				auto c = b + 1;
 				if (c == RE.end()) {
-					// throw exception("������δ�ҵ�����");
-					throw LexException("������δ�ҵ�����");
+					throw LexException("或运算未找到后项");
 				}
 				else {
 					auto p = merge(automatons[*a], automatons[*c]);
@@ -101,7 +91,6 @@ int REtoNFA(vector<int>RE)
 	return RE[0];
 }
 
-//������ʽ����NFA
 Automaton* getNFA(string RE)
 {
 	aIndex = 0xFFFF;
@@ -123,14 +112,12 @@ Automaton* getNFA(string RE)
 				j++;
 			}
 			if (j >= RE.length()) {
-				// throw exception("δ�ҵ�ƥ����һ�����");
-				throw LexException("δ�ҵ�ƥ����һ�����");
+				throw LexException("未找到匹配的右花括号");
 			}
 			string p = RE.substr(i + 1, j - i - 1);
 			auto q = CompleteNFA.find(p);
 			if (q == CompleteNFA.end()) {
-				// throw exception("δ�ҵ�ƥ��Ķ���");
-				throw LexException("δ�ҵ�ƥ��Ķ��" + p);
+				throw LexException("未找到匹配的短语：" + p);
 			}
 			RE.replace(i, j - i + 1, "");
 			auto r = new Automaton(q->second);
@@ -148,7 +135,6 @@ Automaton* getNFA(string RE)
 	return p;
 }
 
-//�ϲ�����Զ���
 Automaton* mergeMultiA(map<int, string>& finalStates)
 {
 	auto p = new Automaton();

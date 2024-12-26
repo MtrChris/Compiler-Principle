@@ -1,3 +1,4 @@
+#pragma once
 #include <stack>
 #include <string>
 #include <vector>
@@ -9,13 +10,11 @@
 
 class Quadruple
 {
-private:
+public:
 	std::string op;
 	std::string arg1;
 	std::string arg2;
 	std::string result;
-
-public:
 	Quadruple(std::string op, std::string arg1, std::string arg2, std::string result) {}
 };
 
@@ -36,5 +35,5 @@ private:
 
 public:
 	void emit(Quadruple q) {}
-	void GenerateCode(ProductionAlg prod, std::stack<int>& stateStack, std::stack<Expr*>& symbolStack) {}
+	// void GenerateCode(ProductionAlg prod, std::stack<int>& stateStack, std::stack<Expr*>& symbolStack) {}
 };
