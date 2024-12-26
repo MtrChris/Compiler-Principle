@@ -14,13 +14,13 @@ int main()
 	while (1) {
 		NametabItem word;
 		int res = readNext(word);
-		/* ¶Ô¶ÁÈ¡µ½µÄ´Êword½øĞĞ´¦Àí... */
+		/* å¯¹è¯»å–åˆ°çš„è¯wordè¿›è¡Œå¤„ç†... */
 		if (res == SYN_ERROR) {
-			cout << "ÒÑÍË³öÉ¨Ãè¡£" << endl;
+			cout << "å·²é€€å‡ºæ‰«æã€‚" << endl;
 			break;
 		}
 		else if (res == FINISHED) {
-			cout << "É¨ÃèÒÑÍê³É£¡" << endl;
+			cout << "æ‰«æå·²å®Œæˆï¼" << endl;
 			break;
 		}
 		cout << "<" << word.name << "," << word.index << ">";
@@ -32,9 +32,9 @@ int main()
 void prepareLex()
 {
 	try {
-		cout << "ÊäÈë´Ê·¨Â·¾¶" << endl;
+		cout << "è¾“å…¥è¯æ³•è·¯å¾„" << endl;
 		cin >> path;
-		cout << "ÊäÈë´úÂëÂ·¾¶" << endl;
+		cout << "è¾“å…¥ä»£ç è·¯å¾„" << endl;
 		cin >> codeFilePath;
 		readRE(path);
 		processLex();
@@ -42,7 +42,7 @@ void prepareLex()
 		map<int, string>newf;
 		auto totalA = mergeMultiA(f);
 		dfa = NFAtoDFA(totalA, f, newf);
-		dfa = simplifyDFA(dfa, newf, finalStates)
+		dfa = simplifyDFA(dfa, newf, finalStates);
 		readCode(codeFilePath);
 	}
 	catch (exception e) {
