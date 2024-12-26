@@ -4,17 +4,17 @@
 using namespace std;
 
 extern bitset<MAXCH>recognizeCh;
-// ï¿½ï¿½ï¿½Ö±ï¿½ 
+// Ãû×Ö±í 
 extern vector<NametabItem> nametab;
 extern vector<pair<Automaton*, map<int, string>>>DFAS;
-// ï¿½æ´¢ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ 
+// ´æ´¢´úÂëÎÄ¼þ 
 extern vector<string> codes;
 
-int nameIndex = 0;	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å£ï¿½ï¿½ï¿½0ï¿½ï¿½Ê¼ï¿½ï¿½ 
-int currPos = 0;	// ï¿½ï¿½Ç°ï¿½Ö·ï¿½ï¿½Â±ê¼´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½0ï¿½ï¿½Ê¼ï¿½ï¿½ 
-int lineCount = 0;	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½0ï¿½ï¿½Ê¼ï¿½ï¿½
+int nameIndex = 0;	// Ãû×ÖÐòºÅ£¨´Ó0¿ªÊ¼£© 
+int currPos = 0;	// µ±Ç°×Ö·ûÏÂ±ê¼´ÁÐÊý£¨´Ó0¿ªÊ¼£© 
+int lineCount = 0;	// ÐÐÊý £¨´Ó0¿ªÊ¼£©
 
-// ï¿½ï¿½ï¿½ï¿½ï¿½Ö±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½nameï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ê£¬ï¿½ï¿½ï¿½ò·µ»ï¿½-1 
+// ÔÚÃû×Ö±íÀïÕÒÊÇ·ñÒÑÓÐname£¬ÕÒµ½·µ»ØÏÂ±ê£¬·ñÔò·µ»Ø-1 
 int findName(string name) {
 	for (int i = 0; i < nametab.size(); i++) {
 		if (nametab[i].name == name) {
@@ -24,13 +24,13 @@ int findName(string name) {
 	return -1;
 }
 
-// Ã¿ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½Ê¶ï¿½ï¿½Ò»ï¿½ï¿½ï¿½Â´ï¿½
-// item: NametabItem --> Ê¶ï¿½ðµ½µÄ´ï¿½ 
-// ï¿½ï¿½ï¿½ï¿½Öµ: SYN_ERROR --> ï¿½ï·¨ï¿½ï¿½ï¿½ï¿½ 
-//		   NOT_FINISHED --> ï¿½ï¿½È¡Î´ï¿½ï¿½ï¿½ 
-//		   FINISHED --> ï¿½ï¿½È¡ï¿½ï¿½ï¿½ 
+// Ã¿µ÷ÓÃÒ»´ÎÊ¶±ðÒ»¸öÐÂ´Ê
+// item: NametabItem --> Ê¶±ðµ½µÄ´Ê 
+// ·µ»ØÖµ: SYN_ERROR --> Óï·¨´íÎó 
+//		   NOT_FINISHED --> ¶ÁÈ¡Î´Íê³É 
+//		   FINISHED --> ¶ÁÈ¡Íê³É 
 int readnext(NametabItem& item,Automaton* dfa,map<int,string>& finalStates,string& error) {
-	string newName = ""; // ï¿½Ð³ï¿½ï¿½ï¿½ï¿½Ä´ï¿½ 
+	string newName = ""; // ÇÐ³öÀ´µÄ´Ê 
 	//printNFA(dfa);
 	int beginState = dfa->begin;
 	int nowState = beginState;
@@ -44,14 +44,14 @@ int readnext(NametabItem& item,Automaton* dfa,map<int,string>& finalStates,strin
 		return FINISHED;
 	}
 	else {
-		throw LexException("ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½Î§ï¿½ï¿½");
+		throw runtime_error("¶ÁÈ¡³¬¹ýÎÄ¼þ·¶Î§£¡");
 	}
 	
 	int lineLength = codes[lineCount].length();
 	while (currPos <= lineLength) {
-		char ch = line[currPos];	// ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½Ö·ï¿½line[lineLength]ï¿½ï¿½'\0' 
-		arrvState = getEndState(dfa, nowState, ch);	// ï¿½ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½Ü½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö·ï¿½ 
-		// ï¿½ï¿½ï¿½Ü½ï¿½ï¿½ï¿½ 
+		char ch = line[currPos];	// ×îºóÒ»¸ö×Ö·ûline[lineLength]ÊÇ'\0' 
+		arrvState = getEndState(dfa, nowState, ch);	// ¼ì²é×Ô¶¯»úÊÇ·ñÄÜ½ÓÊÜÕâ¸ö×Ö·û 
+		// ²»ÄÜ½ÓÊÜ 
 		if (arrvState == -1) {
 			if (nowState == dfa->begin) {
 				if (ch == ' ') {
@@ -71,59 +71,58 @@ int readnext(NametabItem& item,Automaton* dfa,map<int,string>& finalStates,strin
 			}
 			auto it_fs = finalStates.find(nowState);
 			if (it_fs != finalStates.end()) {
-				// ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì¬ 
+				// µ±Ç°µ½´ïÖÕÌ¬ 
 				if (currPos == lineLength) {
-					// ï¿½ï¿½ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½Ë£ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ 
+					// ±¾ÐÐ¶ÁÍêÁË£¬¶ÁÏÂÒ»ÐÐ 
 					lineCount++, currPos = 0;
 				}
 
-				int res = findName(newName);	// ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½Â´ï¿½ 
+				int res = findName(newName);	// ¼ì²éÊÇ·ñÊÇÐÂ´Ê 
 				if (res == -1) {
 					NametabItem nametabItem(nameIndex++, newName, it_fs->second, 0);
 					item = nametabItem;
-					return NOT_FINISHED;	// ï¿½ï¿½Î´ï¿½ï¿½ï¿½ï¿½ 
+					return NOT_FINISHED;	// »¹Î´½áÊø 
 				}
 				else {
 
 					item = nametab[res];
-					return NOT_FINISHED;	// ï¿½ï¿½Î´ï¿½ï¿½ï¿½ï¿½ 
+					return NOT_FINISHED;	// »¹Î´½áÊø 
 				}
 			}
 			else {
 				ostringstream oss;
-				// ï¿½ï¿½Ç°Ã»ï¿½ï¿½ï¿½ï¿½Ì¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 
+				// µ±Ç°Ã»µ½ÖÕÌ¬£¬±¨´í 
 				if (line[currPos] == '\0') {
-					oss << "ï¿½ï¿½" << lineCount + 1 << "ï¿½Ðµï¿½" << currPos + 1 << "ï¿½Ð£ï¿½"
+					oss << "µÚ" << lineCount + 1 << "ÐÐµÚ" << currPos + 1 << "ÁÐ£º"
 						<< codes[lineCount] << " "
-						<< "ï¿½ï·¨ï¿½ï¿½ï¿½ï¿½È±ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½";
+						<< "Óï·¨´íÎó£ºÈ±ÉÙ×Ö·û¡£";
 					error = oss.str();
 				}
 				else {
-					oss << "ï¿½ï¿½" << lineCount + 1 << "ï¿½Ðµï¿½" << currPos + 1 << "ï¿½Ð£ï¿½"
+					oss << "µÚ" << lineCount + 1 << "ÐÐµÚ" << currPos + 1 << "ÁÐ£º"
 						<< codes[lineCount] << " "
-						<< "ï¿½ï·¨ï¿½ï¿½ï¿½ï¿½\"" << line[currPos] << "\"" << endl;
+						<< "Óï·¨´íÎó£º\"" << line[currPos] << "\"" << endl;
 					error = oss.str();
 				}
-				
-				return SYN_ERROR;	// ï¿½Ë³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï·¨ï¿½ï¿½ï¿½ï¿½ 
+				return SYN_ERROR;	// ÍË³ö²¢·µ»ØÓï·¨´íÎó 
 			}
 		}
 		else {
-			// ï¿½ï¿½ï¿½Ô½ï¿½ï¿½ï¿½ 
+			// ¿ÉÒÔ½ÓÊÜ 
 			newName += ch;
 			nowState = arrvState;
 			currPos++;
 		}
 	}
 
-	return FINISHED;	// ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½È¡ï¿½ï¿½Ï£ï¿½lineCount == codes.size() 
+	return FINISHED;	// ´úÂëÎÄ¼þ¶ÁÈ¡Íê±Ï£¬lineCount == codes.size() 
 }
 
-// ï¿½Ó´ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½Ð¶ï¿½È¡ï¿½ï¿½ï¿½ï¿½ 
+// ´Ó´úÂëÎÄ¼þÖÐ¶ÁÈ¡¾ä×Ó 
 void readCode(string path) {
 	ifstream file(path);
 	if (!file.is_open()) {
-		throw ios_base::failure("ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½È¡Ê§ï¿½ï¿½");
+		throw ios_base::failure("´úÂëÎÄ¼þ¶ÁÈ¡Ê§°Ü");
 	}
 
 	string line;
@@ -132,7 +131,7 @@ void readCode(string path) {
 		cout << line<<endl;
 	}
 	
-	// ï¿½Ø±ï¿½ï¿½Ä¼ï¿½
+	// ¹Ø±ÕÎÄ¼þ
 	file.close();
 }
 

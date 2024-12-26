@@ -1,14 +1,11 @@
 #include "GrammarParser.h"
 #include "InputHandler.h"
-#include "CodeGenerator.h"
-#include "../Lex/Lex.h"
 #include <queue>
-#include <stack>
 #include <fstream>
 
 using namespace std;
 
-// -------- AlgElementÀàµÄ³ÉÔ±º¯ÊıÊµÏÖ --------
+// -------- AlgElementç±»çš„æˆå‘˜å‡½æ•°å®ç° --------
 AlgElement::AlgElement() : isTerminal(false), id(-1)
 {
 }
@@ -28,7 +25,7 @@ bool AlgElement::operator==(const AlgElement &right)
   return isTerminal == right.getIsTerminal() && id == right.getId() && id != -1;
 }
 
-// -------- ElementDictÀàµÄ³ÉÔ±º¯ÊıÊµÏÖ ---------
+// -------- ElementDictç±»çš„æˆå‘˜å‡½æ•°å®ç° ---------
 TerminalElement *const ElementDict::CANDIDATEMARK = new TerminalElement("$CANDIDATEMARK$");
 TerminalElement *const ElementDict::EMPTYWORD = new TerminalElement();
 TerminalElement *const ElementDict::ENDCH = new TerminalElement("$ENDCH$");
@@ -96,7 +93,7 @@ AlgElement *ElementDict::getElem(int index) const
 
 void ElementDict::classifyAlg()
 {
-  // ½«²úÉúÊ½°´ÕÕ·ÇÖÕ½á·û·ÖÀà
+  // å°†äº§ç”Ÿå¼æŒ‰ç…§éç»ˆç»“ç¬¦åˆ†ç±»
   parser->classifiedAlgs.resize(elemList.size());
   for (int i = 0; i < parser->algs.size(); i++)
   {
@@ -137,7 +134,7 @@ void ElementDict::_calculateFirst(int curElem, vector<bool> &calcState)
   for (int i = 0; i < parser->classifiedAlgs[curElem].size(); i++)
   {
     ProductionAlg &curAlg = parser->algs[parser->classifiedAlgs[curElem][i]];
-    // Õû¸ö²úÉúÊ½Îª¿Õ×ÖÊ±
+    // æ•´ä¸ªäº§ç”Ÿå¼ä¸ºç©ºå­—æ—¶
     if (curAlg.rightAlg.size() == 0 || curAlg.rightAlg.size() == 1 && *curAlg.rightAlg[0] == *ElementDict::EMPTYWORD)
     {
       firstSet[curElem].insert(EMPTYWORDID);
@@ -147,18 +144,18 @@ void ElementDict::_calculateFirst(int curElem, vector<bool> &calcState)
     for (; j < curAlg.rightAlg.size(); j++)
     {
       int algElemId = curAlg.rightAlg[j]->id;
-      // 1. Óöµ½ÖÕ½á·û£ºÖ±½Ó¼ÓÈëFIRST¼¯ºÏ
+      // 1. é‡åˆ°ç»ˆç»“ç¬¦ï¼šç›´æ¥åŠ å…¥FIRSTé›†åˆ
       if (curAlg.rightAlg[j]->isTerminal)
       {
         firstSet[curElem].insert(algElemId);
         break;
       }
-      // 2. Óöµ½·ÇÖÕ½á·û£ºÈôÎ´¼ÆËãÔò¼ÆËãFIRST
+      // 2. é‡åˆ°éç»ˆç»“ç¬¦ï¼šè‹¥æœªè®¡ç®—åˆ™è®¡ç®—FIRST
       else if (!calcState[algElemId])
       {
         _calculateFirst(algElemId, calcState);
       }
-      // ½«¸Ã·ÇÖÕ½á·ûµÄËùÓĞFIRST¼¯ºÏ£¨³ıÁË¿Õ×Ö£©¼ÓÈë
+      // å°†è¯¥éç»ˆç»“ç¬¦çš„æ‰€æœ‰FIRSTé›†åˆï¼ˆé™¤äº†ç©ºå­—ï¼‰åŠ å…¥
       for (set<int>::iterator it = firstSet[algElemId].begin(); it != firstSet[algElemId].end(); it++)
       {
         if (*it != EMPTYWORDID)
@@ -166,7 +163,7 @@ void ElementDict::_calculateFirst(int curElem, vector<bool> &calcState)
           firstSet[curElem].insert(*it);
         }
       }
-      // ¸Ã·ÇÖÕ½á·û²»°üº¬¿Õ×ÖÊ±£¬²éÕÒÏÂÒ»¸ö²úÉúÊ½
+      // è¯¥éç»ˆç»“ç¬¦ä¸åŒ…å«ç©ºå­—æ—¶ï¼ŒæŸ¥æ‰¾ä¸‹ä¸€ä¸ªäº§ç”Ÿå¼
       if (firstSet[algElemId].find(EMPTYWORDID) == firstSet[algElemId].end())
       {
         break;
@@ -174,7 +171,7 @@ void ElementDict::_calculateFirst(int curElem, vector<bool> &calcState)
     }
     if (j == curAlg.rightAlg.size())
     {
-      firstSet[curElem].insert(EMPTYWORDID); // ¶ÁÍêÁËÕû¸ö²úÉúÊ½£¬±íÊ¾¿ÉÒÔÍÆµ¼Îª¿Õ×Ö
+      firstSet[curElem].insert(EMPTYWORDID); // è¯»å®Œäº†æ•´ä¸ªäº§ç”Ÿå¼ï¼Œè¡¨ç¤ºå¯ä»¥æ¨å¯¼ä¸ºç©ºå­—
     }
   }
 }
@@ -205,21 +202,11 @@ ElementDict::~ElementDict()
   }
 }
 
-// -------- TerminalElementÀàµÄ³ÉÔ±º¯ÊıÊµÏÖ  --------
+// -------- TerminalElementç±»çš„æˆå‘˜å‡½æ•°å®ç°  --------
 
 TerminalElement::TerminalElement(string _type, string _val) : type(_type), val(_val)
 {
   isTerminal = true;
-}
-
-const string& TerminalElement::getType() const
-{
-  return type;
-}
-
-const string& TerminalElement::getVal() const
-{
-  return val;
 }
 
 bool TerminalElement::operator==(const AlgElement &right)
@@ -229,10 +216,10 @@ bool TerminalElement::operator==(const AlgElement &right)
   {
     return false;
   }
-  return type == tRight->type;
+  return type == tRight->type && val == tRight->val;
 }
 
-// -------- NonTerminalElementÀàµÄ³ÉÔ±º¯ÊıÊµÏÖ --------
+// -------- NonTerminalElementç±»çš„æˆå‘˜å‡½æ•°å®ç° --------
 
 NonTerminalElement::NonTerminalElement(string _name) : name(_name)
 {
@@ -249,7 +236,7 @@ bool NonTerminalElement::operator==(const AlgElement &right)
   return name == nRight->name;
 }
 
-// -------- ProductionAlgÀàµÄ³ÉÔ±º¯ÊıÊµÏÖ --------
+// -------- ProductionAlgç±»çš„æˆå‘˜å‡½æ•°å®ç° --------
 ProductionAlg::ProductionAlg(AlgElement *_leftElem) : leftElem(_leftElem)
 {
 }
@@ -262,24 +249,24 @@ void ProductionAlg::readFromStr(const string &s, ElementDict &dict)
 {
   string word;
   InputReader reader(s);
-  // ¶ÁÈ¡×ó±ßµÄÔªËØ
+  // è¯»å–å·¦è¾¹çš„å…ƒç´ 
   reader.getNextWord(word);
   leftElem = new NonTerminalElement(word);
   dict.updateElem(leftElem);
-  // ¼ì²é¶¨Òå¸ñÊ½
+  // æ£€æŸ¥å®šä¹‰æ ¼å¼
   reader.getNextWord(word);
   if (word != "->")
   {
-    throw InputException("²úÉúÊ½¶¨Òå´íÎó");
+    throw InputException("äº§ç”Ÿå¼å®šä¹‰é”™è¯¯");
   }
-  // ¶ÁÈ¡ÓÒ±ßµÄÔªËØ
+  // è¯»å–å³è¾¹çš„å…ƒç´ 
   while (reader.hasNextWord())
   {
     AlgElement *elem = nullptr;
     reader.getNextWord(word);
     if (word == "{")
     {
-      // ¶ÔÖÕ½á·û½øĞĞ¶ÁÈ¡
+      // å¯¹ç»ˆç»“ç¬¦è¿›è¡Œè¯»å–
       int readcnt = 0;
       string terminalInfo[2];
       reader.getNextWord(word);
@@ -291,7 +278,7 @@ void ProductionAlg::readFromStr(const string &s, ElementDict &dict)
       }
       if (word != "}")
       {
-        throw InputException("ÖÕ½á·ûÊäÈë¸ñÊ½´íÎó");
+        throw InputException("ç»ˆç»“ç¬¦è¾“å…¥æ ¼å¼é”™è¯¯");
       }
       elem = new TerminalElement(terminalInfo[0], terminalInfo[1]);
     }
@@ -319,7 +306,7 @@ void ProductionAlg::splitAlg(vector<ProductionAlg> &algs)
   {
     vector<AlgElement *>::iterator partStart = algs[i].rightAlg.begin();
     vector<AlgElement *>::iterator partEnd = algs[i].rightAlg.begin();
-    // ÒÔºòÑ¡Ê½·û²ğ·ÖÓÒ²à²úÉúÊ½
+    // ä»¥å€™é€‰å¼ç¬¦æ‹†åˆ†å³ä¾§äº§ç”Ÿå¼
     while (partStart != algs[i].rightAlg.end())
     {
       ProductionAlg newAlg(algs[i].leftElem);
@@ -358,7 +345,7 @@ int ProductionAlg::getAlgLength() const
   return rightAlg.size();
 }
 
-// -------- GrammarDFAAlgÀàµÄ³ÉÔ±º¯ÊıÊµÏÖ --------
+// -------- GrammarDFAAlgç±»çš„æˆå‘˜å‡½æ•°å®ç° --------
 DFANodeAlg::DFANodeAlg(int _algId, int _curpos, std::set<int> _prospectCh)
     : algId(_algId), curpos(_curpos), prospectCh(_prospectCh)
 {
@@ -407,7 +394,7 @@ bool DFANodeAlg::operator==(const DFANodeAlg &right) const
   return algId == right.algId && curpos == right.curpos && prospectCh == right.prospectCh;
 }
 
-// ²úÉúÊ½ÅÅĞò¹æÔò£º²úÉúÊ½±àºÅ > µ±Ç°Î»ÖÃ > Õ¹Íû·û
+// äº§ç”Ÿå¼æ’åºè§„åˆ™ï¼šäº§ç”Ÿå¼ç¼–å· > å½“å‰ä½ç½® > å±•æœ›ç¬¦
 bool DFANodeAlg::operator<(const DFANodeAlg &right) const
 {
   if (algId != right.algId)
@@ -421,7 +408,7 @@ bool DFANodeAlg::operator<(const DFANodeAlg &right) const
   return prospectCh < right.prospectCh;
 }
 
-// -------- GrammarDFATransferÀàµÄ³ÉÔ±º¯ÊıÊµÏÖ --------
+// -------- GrammarDFATransferç±»çš„æˆå‘˜å‡½æ•°å®ç° --------
 GrammarDFATransfer::GrammarDFATransfer(int _srcId, int _chId, int _dstId) : srcId(_srcId), chId(_chId), dstId(_dstId)
 {
 }
@@ -450,7 +437,7 @@ int GrammarDFATransfer::getChId()
   return chId;
 }
 
-// -------- GrammarDFANodeÀàµÄ³ÉÔ±º¯ÊıÊµÏÖ --------
+// -------- GrammarDFANodeç±»çš„æˆå‘˜å‡½æ•°å®ç° --------
 GrammarDFANode::GrammarDFANode(int _stateId) : stateId(_stateId)
 {
 }
@@ -473,22 +460,22 @@ int GrammarDFANode::getId() const
   return stateId;
 }
 
-// ×´Ì¬½áµãÅÅĞò¹æÔò
+// çŠ¶æ€ç»“ç‚¹æ’åºè§„åˆ™
 bool GrammarDFANode::operator<(const GrammarDFANode &right) const
 {
   return nodeAlg < right.nodeAlg;
 }
 
-// ½áµãÏàÍ¬ÅĞ¶¨
+// ç»“ç‚¹ç›¸åŒåˆ¤å®š
 bool GrammarDFANode::operator==(const GrammarDFANode &right) const
 {
   return nodeAlg == right.nodeAlg;
 }
 
-// -------- GrammarDFAÀàµÄ³ÉÔ±º¯ÊıÊµÏÖ --------
+// -------- GrammarDFAç±»çš„æˆå‘˜å‡½æ•°å®ç° --------
 void GrammarDFA::expandNodeAlg(GrammarDFANode *node)
 {
-  queue<const DFANodeAlg *> q; // ¼ÇÂ¼Î´½øĞĞÀ©Õ¹µÄ±í´ïÊ½±àºÅ
+  queue<const DFANodeAlg *> q; // è®°å½•æœªè¿›è¡Œæ‰©å±•çš„è¡¨è¾¾å¼ç¼–å·
   for (set<DFANodeAlg>::iterator it = node->nodeAlg.begin(); it != node->nodeAlg.end(); it++)
   {
     q.push(&(*it));
@@ -499,14 +486,14 @@ void GrammarDFA::expandNodeAlg(GrammarDFANode *node)
     q.pop();
     if (algItem->isAtEnd(parser))
     {
-      continue; // ¸Ã²úÉúÊ½ÒÑµ½½áÎ²£¬²»À©Õ¹
+      continue; // è¯¥äº§ç”Ÿå¼å·²åˆ°ç»“å°¾ï¼Œä¸æ‰©å±•
     }
     AlgElement *curElem = algItem->getCurElement(parser);
     if (curElem->getIsTerminal())
     {
       continue;
     }
-    // µ±Ç°Î»ÖÃÊÇ·ÇÖÕ½á·û£ºÒıÈë²úÉúÊ½
+    // å½“å‰ä½ç½®æ˜¯éç»ˆç»“ç¬¦ï¼šå¼•å…¥äº§ç”Ÿå¼
     set<int> curProspect;
     if (getProspectCh(*algItem, curProspect))
     {
@@ -515,20 +502,20 @@ void GrammarDFA::expandNodeAlg(GrammarDFANode *node)
         curProspect.insert(*it);
       }
     }
-    // ½«ËùÓĞ¸Ã·ÇÖÕ½á·ûµÄ²úÉúÊ½Ìí¼Óµ½½ÚµãÖĞ
+    // å°†æ‰€æœ‰è¯¥éç»ˆç»“ç¬¦çš„äº§ç”Ÿå¼æ·»åŠ åˆ°èŠ‚ç‚¹ä¸­
     const vector<int> &chAlgs = parser->getClassifiedAlgs(curElem->getId());
     for (int j = 0; j < chAlgs.size(); j++)
     {
       bool expandFlag = true;
       if (node->algIndex.find({chAlgs[j], 0}) == node->algIndex.end())
       {
-        // Î´ÕÒµ½Ä¿±ê²úÉúÊ½£¬ÔòÌí¼Ó¸Ã²úÉúÊ½
+        // æœªæ‰¾åˆ°ç›®æ ‡äº§ç”Ÿå¼ï¼Œåˆ™æ·»åŠ è¯¥äº§ç”Ÿå¼
         node->addAlg(DFANodeAlg(chAlgs[j], 0, curProspect));
       }
       else
       {
-        // Ä¿±ê²úÉúÊ½ÒÑ¾­ÔÚÊı×éÖĞ£¬Ôò¸üĞÂ²úÉúÊ½µÄÕ¹Íû·û
-        expandFlag = false; // Ôİ¶¨²úÉúÊ½²»ĞèÒªÔÙ´ÎÀ©Õ¹
+        // ç›®æ ‡äº§ç”Ÿå¼å·²ç»åœ¨æ•°ç»„ä¸­ï¼Œåˆ™æ›´æ–°äº§ç”Ÿå¼çš„å±•æœ›ç¬¦
+        expandFlag = false; // æš‚å®šäº§ç”Ÿå¼ä¸éœ€è¦å†æ¬¡æ‰©å±•
         DFANodeAlg targetAlg(node->algIndex[{chAlgs[j], 0}]);
         node->nodeAlg.erase(targetAlg);
         for (set<int>::iterator it = curProspect.begin(); it != curProspect.end(); it++)
@@ -536,7 +523,7 @@ void GrammarDFA::expandNodeAlg(GrammarDFANode *node)
           if (targetAlg.prospectCh.find(*it) == targetAlg.prospectCh.end())
           {
             targetAlg.prospectCh.insert(*it);
-            expandFlag = true; // ²úÉúÊ½¸üĞÂÁËÕ¹Íû·û£¬ĞèÒªÖØĞÂÀ©Õ¹
+            expandFlag = true; // äº§ç”Ÿå¼æ›´æ–°äº†å±•æœ›ç¬¦ï¼Œéœ€è¦é‡æ–°æ‰©å±•
           }
         }
         node->addAlg(targetAlg);
@@ -549,7 +536,7 @@ void GrammarDFA::expandNodeAlg(GrammarDFANode *node)
   }
 }
 
-// ¼ÆËãÕ¹Íû·û£¬·µ»ØÖµÎª¸Ã²úÉúÊ½ÊÇ·ñ¿ÉÒÔÍÆµ¼³ö¿Õ×Ö
+// è®¡ç®—å±•æœ›ç¬¦ï¼Œè¿”å›å€¼ä¸ºè¯¥äº§ç”Ÿå¼æ˜¯å¦å¯ä»¥æ¨å¯¼å‡ºç©ºå­—
 bool GrammarDFA::getProspectCh(const DFANodeAlg &alg, set<int> &res)
 {
   const ProductionAlg &targetAlg = alg.getFullAlg(parser);
@@ -557,15 +544,15 @@ bool GrammarDFA::getProspectCh(const DFANodeAlg &alg, set<int> &res)
   {
     return true;
   }
-  int i = alg.getAlgPos() + 1; // ´Óµ±Ç°Î»ÖÃµÄÏÂÒ»¸ö·ûºÅ¿ªÊ¼
+  int i = alg.getAlgPos() + 1; // ä»å½“å‰ä½ç½®çš„ä¸‹ä¸€ä¸ªç¬¦å·å¼€å§‹
   for (; i < targetAlg.getAlgLength(); i++)
   {
     if (targetAlg.getAlgElement(i)->getIsTerminal())
     {
-      res.insert(targetAlg.getAlgElement(i)->getId()); // ÖÕ½á·û£ºÖ±½Ó¼ÓÈëÕ¹Íû·ûÖĞ
+      res.insert(targetAlg.getAlgElement(i)->getId()); // ç»ˆç»“ç¬¦ï¼šç›´æ¥åŠ å…¥å±•æœ›ç¬¦ä¸­
       break;
     }
-    // ·ÇÖÕ½á·û£º½«¸Ã·ÇÖÕ½á·ûµÄFIRST¼¯ºÏ×÷ÎªÕ¹Íû·û
+    // éç»ˆç»“ç¬¦ï¼šå°†è¯¥éç»ˆç»“ç¬¦çš„FIRSTé›†åˆä½œä¸ºå±•æœ›ç¬¦
     const set<int> elemFirst = parser->getDict().getFirstSet(targetAlg.getAlgElement(i)->getId());
     for (set<int>::iterator it = elemFirst.begin(); it != elemFirst.end(); it++)
     {
@@ -584,21 +571,21 @@ bool GrammarDFA::getProspectCh(const DFANodeAlg &alg, set<int> &res)
 
 void GrammarDFA::buildDFA()
 {
-  // ¹¹½¨ÆğÊ¼×´Ì¬
+  // æ„å»ºèµ·å§‹çŠ¶æ€
   GrammarDFANode *startNode = new GrammarDFANode(0);
   startNode->addAlg(DFANodeAlg(0, 0, {ENDCHID}));
-  queue<pair<GrammarDFANode *, GrammarDFATransfer *>> nodeQueue; // Ê¹ÓÃ¶ÓÁĞ¼ÇÂ¼Î´´¦ÀíµÄ½áµã£¬µÚ¶ş¸öÔªËØ¼ÇÂ¼µÄÊÇÓë¸Ã×´Ì¬ÓĞ¹ØµÄ×ªÒÆ
+  queue<pair<GrammarDFANode *, GrammarDFATransfer *>> nodeQueue; // ä½¿ç”¨é˜Ÿåˆ—è®°å½•æœªå¤„ç†çš„ç»“ç‚¹ï¼Œç¬¬äºŒä¸ªå…ƒç´ è®°å½•çš„æ˜¯ä¸è¯¥çŠ¶æ€æœ‰å…³çš„è½¬ç§»
   nodeQueue.push({startNode, nullptr});
   while (!nodeQueue.empty())
   {
     GrammarDFANode *curNode = nodeQueue.front().first;
     GrammarDFATransfer *nodeSrc = nodeQueue.front().second;
     nodeQueue.pop();
-    expandNodeAlg(curNode); // À©Õ¹µÈ¼Û²úÉúÊ½
+    expandNodeAlg(curNode); // æ‰©å±•ç­‰ä»·äº§ç”Ÿå¼
     set<GrammarDFANode>::iterator findRes = dfa.find(*curNode);
     if (findRes != dfa.end())
     {
-      // Ïû³ıÖØ¸´×´Ì¬£º¸ü¸Ä×´Ì¬×ªÒÆÖ¸Ïò
+      // æ¶ˆé™¤é‡å¤çŠ¶æ€ï¼šæ›´æ”¹çŠ¶æ€è½¬ç§»æŒ‡å‘
       if (nodeSrc)
       {
         nodeSrc->setDst(findRes->stateId);
@@ -606,25 +593,25 @@ void GrammarDFA::buildDFA()
       delete curNode;
       continue;
     }
-    // ¸ü¸Ä×´Ì¬×ªÒÆÖ¸Ïò
+    // æ›´æ”¹çŠ¶æ€è½¬ç§»æŒ‡å‘
     curNode->stateId = dfa.size();
     if (nodeSrc)
     {
       nodeSrc->setDst(curNode->stateId);
     }
     dfa.insert(*curNode);
-    // ¸ù¾İÒÑÓĞµÄ²úÉúÊ½×ªÒÆ×´Ì¬
-    map<int, GrammarDFANode *> chTransfer; // ¼ÇÂ¼Ã¿¸ö·ûºÅ¶ÔÓ¦µÄ×ªÒÆ×´Ì¬
+    // æ ¹æ®å·²æœ‰çš„äº§ç”Ÿå¼è½¬ç§»çŠ¶æ€
+    map<int, GrammarDFANode *> chTransfer; // è®°å½•æ¯ä¸ªç¬¦å·å¯¹åº”çš„è½¬ç§»çŠ¶æ€
     for (set<DFANodeAlg>::iterator algItem = curNode->nodeAlg.begin(); algItem != curNode->nodeAlg.end(); algItem++)
     {
       if (algItem->isAtEnd(parser))
       {
-        continue; // ¸Ã²úÉúÊ½ÒÑµ½½áÎ²£¬²»ĞèÒª×ªÒÆ
+        continue; // è¯¥äº§ç”Ÿå¼å·²åˆ°ç»“å°¾ï¼Œä¸éœ€è¦è½¬ç§»
       }
-      int curCh = algItem->getCurElement(parser)->getId(); // ¸Ã²úÉúÊ½½ÓÊÜµÄ×Ö·û
+      int curCh = algItem->getCurElement(parser)->getId(); // è¯¥äº§ç”Ÿå¼æ¥å—çš„å­—ç¬¦
       if (chTransfer.find(curCh) == chTransfer.end())
       {
-        // Ã»ÓĞ½ÓÊÜ¸Ã×Ö·ûµÄĞÂ×´Ì¬£¬´´½¨×´Ì¬
+        // æ²¡æœ‰æ¥å—è¯¥å­—ç¬¦çš„æ–°çŠ¶æ€ï¼Œåˆ›å»ºçŠ¶æ€
         GrammarDFANode *newState = new GrammarDFANode;
         chTransfer[curCh] = newState;
         GrammarDFATransfer *newTransfer = new GrammarDFATransfer(curNode->stateId, curCh);
@@ -660,7 +647,7 @@ GrammarDFA::~GrammarDFA()
   }
 }
 
-// -------- LRItemÀàµÄ³ÉÔ±º¯ÊıÊµÏÖ -------
+// -------- LRItemç±»çš„æˆå‘˜å‡½æ•°å®ç° -------
 LRItem::LRItem(ActionType _action, int _index) : action(_action), index(_index)
 {
 }
@@ -671,7 +658,7 @@ void LRItem::setItem(ActionType _action, int _index)
   index = _index;
 }
 
-// -------- LRChartÀàµÄ³ÉÔ±º¯ÊıÊµÏÖ --------
+// -------- LRChartç±»çš„æˆå‘˜å‡½æ•°å®ç° --------
 void LRChart::init(GrammarParser *_parser)
 {
   parser = _parser;
@@ -680,21 +667,21 @@ void LRChart::init(GrammarParser *_parser)
 
 void LRChart::build()
 {
-  // 1. ½«Ã¿¸ö×ªÒÆ¶ÔÓ¦µ½SHIFTºÍGOTO
+  // 1. å°†æ¯ä¸ªè½¬ç§»å¯¹åº”åˆ°SHIFTå’ŒGOTO
   const vector<GrammarDFATransfer *> &dfaTransfer = parser->getDFA().getTransfer();
   for (vector<GrammarDFATransfer *>::const_iterator tsf = dfaTransfer.begin(); tsf < dfaTransfer.end(); tsf++)
   {
     ActionType tsfAction = (parser->getDict().getElem((*tsf)->getChId())->getIsTerminal()) ? SHIFT : GOTO;
     chart[(*tsf)->getSrc()][(*tsf)->getChId()].setItem(tsfAction, (*tsf)->getDstId());
   }
-  // 2. ±éÀúÃ¿¸ö×´Ì¬£¬¶ÔÓ¦µ½REDUCE
+  // 2. éå†æ¯ä¸ªçŠ¶æ€ï¼Œå¯¹åº”åˆ°REDUCE
   const set<GrammarDFANode> &dfaNodes = parser->getDFA().getNodes();
   for (set<GrammarDFANode>::const_iterator node = dfaNodes.begin(); node != dfaNodes.end(); node++)
   {
     const set<DFANodeAlg> &nodeAlgs = node->getAlgs();
     for (set<DFANodeAlg>::const_iterator alg = nodeAlgs.begin(); alg != nodeAlgs.end(); alg++)
     {
-      if (alg->isAtEnd(parser)) // ¶ÔÓÚÒÑ¾­µ½½áÎ²µÄ²úÉúÊ½£¬ÖÃÎªREDUCE
+      if (alg->isAtEnd(parser)) // å¯¹äºå·²ç»åˆ°ç»“å°¾çš„äº§ç”Ÿå¼ï¼Œç½®ä¸ºREDUCE
       {
         for (set<int>::iterator ch = alg->prospectCh.begin(); ch != alg->prospectCh.end(); ch++)
         {
@@ -703,7 +690,7 @@ void LRChart::build()
       }
     }
   }
-  // 3. ÉèÖÃACCEPT×´Ì¬£ºÓÉÓÚÌí¼ÓÁËÆğÊ¼²úÉúÊ½£¬ACCEPT×´Ì¬±Ø¶¨´¦ÓÚ1×´Ì¬
+  // 3. è®¾ç½®ACCEPTçŠ¶æ€ï¼šç”±äºæ·»åŠ äº†èµ·å§‹äº§ç”Ÿå¼ï¼ŒACCEPTçŠ¶æ€å¿…å®šå¤„äº1çŠ¶æ€
   chart[ACCSTATEID][ENDCHID].setItem(ACCEPT);
 }
 
@@ -750,7 +737,7 @@ void LRChart::print() const
   }
 }
 
-// -------- GrammarParserÀàµÄ³ÉÔ±º¯ÊıÊµÏÖ --------
+// -------- GrammarParserç±»çš„æˆå‘˜å‡½æ•°å®ç° --------
 const ProductionAlg &GrammarParser::getProductionAlg(int index)
 {
   return algs[index];
@@ -792,7 +779,7 @@ void GrammarParser::processGrammarRule()
     grammarInput.open("grammarInput.txt");
     if (!grammarInput.is_open())
     {
-      throw InputException("ÎŞ·¨´ò¿ªgrammarInput.txt½øĞĞ¶ÁÈë");
+      throw InputException("æ— æ³•æ‰“å¼€grammarInput.txtè¿›è¡Œè¯»å…¥");
     }
     dict.init(this);
     string s;
@@ -810,14 +797,14 @@ void GrammarParser::processGrammarRule()
     chart.init(this);
     chart.build();
 
-    // ÒÔÏÂÎª´òÓ¡²Ù×÷
-    cout << "---------- ²úÉúÊ½±í ----------" << endl;
+    // ä»¥ä¸‹ä¸ºæ‰“å°æ“ä½œ
+    cout << "---------- äº§ç”Ÿå¼è¡¨ ----------" << endl;
     printAlgs();
     cout << endl;
-    cout << "---------- ·ûºÅ±í -------- " << endl;
+    cout << "---------- ç¬¦å·è¡¨ -------- " << endl;
     dict.print();
     cout << endl;
-    cout << "---------- LR·ÖÎö±í -----------" << endl;
+    cout << "---------- LRåˆ†æè¡¨ -----------" << endl;
     chart.print();
     cout << endl;
   }
@@ -829,72 +816,4 @@ void GrammarParser::processGrammarRule()
 
 void GrammarParser::LR1Main()
 {
-  prepareLex();
-  stack<int> stateStack;
-  stack<Expr *> symbolStack;
-  stateStack.push(0);
-  CodeGenerator codegenerator;
-  while (true)
-  {
-    int currentState = stateStack.top();
-    NametabItem curItem;
-    int res = readNext(curItem);
-    TerminalElement* curSymbol = nullptr;
-    if(res == FINISHED){
-      curSymbol = new TerminalElement(*ElementDict::ENDCH);
-    }
-    else{
-      curSymbol = new TerminalElement(curItem.type, curItem.name);
-      cout << curItem.type << " " << curItem.name << endl;
-    }
-    int currentSymbolNum = dict.findElem(*curSymbol);
-    LRItem item = chart.get(currentState, currentSymbolNum);
-
-    switch (item.action)
-    {
-    case SHIFT:
-    {
-      stateStack.push(item.index);
-      Expr *shiftE = new Expr();
-      if(curSymbol->getType() == SYMBOL){
-        shiftE->place = curSymbol->getVal();
-      }
-      symbolStack.push(shiftE);
-      break;
-    }
-    case REDUCE:
-    {
-      ProductionAlg prod = getProductionAlg(item.index);
-      int gotoState = chart.get(stateStack.top(), currentSymbolNum).index;
-      stateStack.push(gotoState);
-      codegenerator.GenerateCode(prod, stateStack, symbolStack);
-      break;
-    }
-
-    case GOTO:
-      stateStack.push(item.index);
-      break;
-
-    case ACCEPT:
-      return;
-
-    case ERROR:
-      throw GrammarException("Óï·¨·ÖÎö´íÎó£º·Ç·¨Óï¾ä¹¹³É");
-      return;
-    default:
-      throw GrammarException("Óï·¨·ÖÎö´íÎó£ºLR·ÖÎö±íÔªËØ·Ç·¨");
-      return;
-    }
-  }
-}
-
-// -------- GrammarExceptionÀàµÄ³ÉÔ±º¯ÊıÊµÏÖ --------
-GrammarException::GrammarException(const std::string &msg)
-{
-  _msg = msg;
-}
-
-const char *GrammarException::what()
-{
-  return _msg.c_str();
 }

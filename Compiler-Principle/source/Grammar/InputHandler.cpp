@@ -1,7 +1,7 @@
 #include "InputHandler.h"
 using namespace std;
 
-// -------- InputReaderÀàµÄº¯ÊıÊµÏÖ --------
+// -------- InputReaderç±»çš„å‡½æ•°å®ç° --------
 InputReader::InputReader(const string &input)
 {
   init(input);
@@ -35,7 +35,7 @@ void InputReader::getNextWord(std::string &word)
 {
   if (!hasNextWord())
   {
-    throw InputException("Ã»ÓĞÏÂÒ»¸ö¿É¶ÁÈ¡µÄ×Ö·û");
+    throw InputException("æ²¡æœ‰ä¸‹ä¸€ä¸ªå¯è¯»å–çš„å­—ç¬¦");
   }
   word.clear();
   for (; curpos < text.end() && *curpos != ' '; curpos++)
@@ -48,7 +48,7 @@ char InputReader::getNextCh()
 {
   if (!hasNextWord())
   {
-    throw InputException("Ã»ÓĞÏÂÒ»¸ö¿É¶ÁÈ¡µÄ×Ö·û");
+    throw InputException("æ²¡æœ‰ä¸‹ä¸€ä¸ªå¯è¯»å–çš„å­—ç¬¦");
   }
   return *(curpos++);
 }
@@ -66,7 +66,7 @@ void InputReader::removeEscape(string &s)
   s = res;
 }
 
-// -------- InputExceptionÀàµÄº¯ÊıÊµÏÖ --------
+// -------- InputExceptionç±»çš„å‡½æ•°å®ç° --------
 InputException::InputException(const std::string &msg)
 {
   _msg = msg;

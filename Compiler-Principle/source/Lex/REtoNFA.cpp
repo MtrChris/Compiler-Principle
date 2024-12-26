@@ -3,73 +3,73 @@
 #include <fstream>
 using namespace std;
 
-//ï¿½ï¿½Ê¶ï¿½ï¿½Ä¶ï¿½ï¿½ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½Ö®ï¿½ï¿½Ä¶ï¿½Ó¦ï¿½ï¿½Ïµ
+//ÒÑÊ¶±ðµÄ¶ÌÓïºÍ×Ô¶¯»úÖ®¼äµÄ¶ÔÓ¦¹ØÏµ
 extern map<string, Automaton*>CompleteNFA;
 
-//ï¿½ï¿½Ê¶ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½Î»Í¼
+//¿ÉÊ¶±ð×Ö·ûµÄÎ»Í¼
 extern bitset<MAXCH>recognizeCh;
 
-//ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½Å£ï¿½ï¿½ï¿½unsigned charï¿½Íµï¿½ï¿½ï¿½ï¿½ÖµÒªï¿½ï¿½
+//×Ô¶¯»úÐòºÅ£¬±Èunsigned charÐÍµÄ×î´óÖµÒª´ó
 extern int aIndex;
 
-//ï¿½Ô¶ï¿½ï¿½ï¿½Õ¼Î»ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½
+//×Ô¶¯»úÕ¼Î»·ûµÄ¼¯ºÏ
 extern map<int, Automaton*>automatons;
 
-//ï¿½æ´¢ï¿½Ê·ï¿½
+//´æ´¢´Ê·¨
 extern vector<string>lexs;
 
-//ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¶ï¿½ï¿½ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½
+//¼ÇÂ¼±»ÓÃ×÷±êÊ¶·ûµÄ×Ô¶¯»ú
 extern unordered_set<string>signA;
 
 extern int stateIndex;
 
 
-//getNFAï¿½ÄµÝ¹ï¿½ï¿½Ó³ï¿½ï¿½ï¿½
+//getNFAµÄµÝ¹é×Ó³ÌÐò
 int REtoNFA(vector<int>RE)
 {
-	if (RE.size() == 0)
+	if (RE.size()==0)
 		return -1;
-	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	//´¦ÀíÀ¨ºÅ
 	for (;;) {
 		auto p = find(RE.rbegin(), RE.rend(), '(');
 		if (p != RE.rend()) {
-			auto b = p.base() - 1;
+			auto b = p.base()-1;
 			auto d = find(b, RE.end(), ')');
 			if (d != RE.end()) {
-				int i = REtoNFA(vector<int>(b + 1, d));
-				auto a = RE.erase(b, d + 1);
+				int i=REtoNFA(vector<int>(b+1,d));
+				auto a = RE.erase(b, d+1);
 				if (i != -1) {
 					RE.insert(a, i);
 					//printNFA(automatons[i]);
 				}
 			}
 			else {
-				// throw exception("ï¿½ï¿½ï¿½Å²ï¿½Æ¥ï¿½ï¿½");
-				throw LexException("ï¿½ï¿½ï¿½Å²ï¿½Æ¥ï¿½ï¿½");
+				// throw exception("À¨ºÅ²»Æ¥Åä");
+				throw runtime_error("À¨ºÅ²»Æ¥Åä");
 			}
 		}
 		else
 			break;
 	}
-	//ï¿½ï¿½ï¿½ï¿½ï¿½Õ°ï¿½
+	//´¦Àí±Õ°ü
 	for (;;) {
 		auto p = find(RE.begin(), RE.end(), '*');
 		if (p == RE.begin()) {
-			// throw exception("Î´ï¿½Òµï¿½Æ¥ï¿½ï¿½Ä±Õ°ï¿½");
-			throw LexException("Î´ï¿½Òµï¿½Æ¥ï¿½ï¿½Ä±Õ°ï¿½");
+			// throw exception("Î´ÕÒµ½Æ¥ÅäµÄ±Õ°ü");
+			throw runtime_error("Î´ÕÒµ½Æ¥ÅäµÄ±Õ°ü");
 		}
 		else if (p == RE.end())
 			break;
 		else {
-			auto q = closure(automatons[*(p - 1)]);
+			auto q=closure(automatons[*(p - 1)]);
 			automatons[aIndex] = q;
 			//printNFA(q);
-			auto a = RE.erase(p - 1, p + 1);
+			auto a =RE.erase(p - 1, p+1);
 			RE.insert(a, aIndex++);
 
 		}
 	}
-	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	//´¦ÀíÁ¬½Ó
 	for (;;) {
 		if (RE.size() == 1)
 			break;
@@ -78,8 +78,8 @@ int REtoNFA(vector<int>RE)
 			if (*b == '|') {
 				auto c = b + 1;
 				if (c == RE.end()) {
-					// throw exception("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î´ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½");
-					throw LexException("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î´ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½");
+					// throw exception("»òÔËËãÎ´ÕÒµ½ºóÏî");
+					throw runtime_error("»òÔËËãÎ´ÕÒµ½ºóÏî");
 				}
 				else {
 					auto p = merge(automatons[*a], automatons[*c]);
@@ -101,7 +101,7 @@ int REtoNFA(vector<int>RE)
 	return RE[0];
 }
 
-//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê½ï¿½ï¿½ï¿½ï¿½NFA
+//ÓÉÕý¹æÊ½Éú³ÉNFA
 Automaton* getNFA(string RE)
 {
 	aIndex = 0xFFFF;
@@ -123,14 +123,14 @@ Automaton* getNFA(string RE)
 				j++;
 			}
 			if (j >= RE.length()) {
-				// throw exception("Î´ï¿½Òµï¿½Æ¥ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½");
-				throw LexException("Î´ï¿½Òµï¿½Æ¥ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½");
+				// throw exception("Î´ÕÒµ½Æ¥ÅäµÄÓÒ»¨À¨ºÅ");
+				throw runtime_error("Î´ÕÒµ½Æ¥ÅäµÄÓÒ»¨À¨ºÅ");
 			}
 			string p = RE.substr(i + 1, j - i - 1);
 			auto q = CompleteNFA.find(p);
 			if (q == CompleteNFA.end()) {
-				// throw exception("Î´ï¿½Òµï¿½Æ¥ï¿½ï¿½Ä¶ï¿½ï¿½ï¿½");
-				throw LexException("Î´ï¿½Òµï¿½Æ¥ï¿½ï¿½Ä¶ï¿½ï¿½ï£º" + p);
+				// throw exception("Î´ÕÒµ½Æ¥ÅäµÄ¶ÌÓï");
+				throw runtime_error("Î´ÕÒµ½Æ¥ÅäµÄ¶ÌÓï");
 			}
 			RE.replace(i, j - i + 1, "");
 			auto r = new Automaton(q->second);
@@ -148,7 +148,7 @@ Automaton* getNFA(string RE)
 	return p;
 }
 
-//ï¿½Ï²ï¿½ï¿½ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½
+//ºÏ²¢¶à¸ö×Ô¶¯»ú
 Automaton* mergeMultiA(map<int, string>& finalStates)
 {
 	auto p = new Automaton();
