@@ -133,4 +133,11 @@ void standardA(map<uint64, bitset<MAXCH>>& edge)
     }
 }
 
-
+LexException::LexException(const std::string &msg)
+{
+    _msg = msg;
+}
+const char *LexException::what()
+{
+    return _msg.c_str();
+}

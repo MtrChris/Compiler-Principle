@@ -45,7 +45,7 @@ int readNext(NametabItem& item) {
 		return FINISHED;
 	}
 	else {
-		throw runtime_error("读取超过文件范围！");
+		throw LexException("读取超过文件范围！");
 	}
 	
 	int lineLength = codes[lineCount].length();
@@ -98,15 +98,12 @@ int readNext(NametabItem& item) {
 
 				// 当前没到终态，报错 
 				if (line[currPos] == '\0') {
-					cout << "第" << lineCount + 1 << "行第" << currPos + 1 << "列："
-						<< codes[lineCount] << " "
-						<< "语法错误：缺少字符。" << endl;
+					throw LexException(FORMATEXCEPTION(lineCount + 1, currPos + 1, codes[lineCount], "缺少字符"));
 				}
 				else {
-					cout << "第" << lineCount + 1 << "行第" << currPos + 1 << "列："
-						<< codes[lineCount] << " "
-						<< "语法错误：\"" << line[currPos] << "\"" << endl;
+					throw LexException(FORMATEXCEPTION(lineCount + 1, currPos + 1, codes[lineCount], line[currPos]));
 				}
+				
 				return SYN_ERROR;	// 退出并返回语法错误 
 			}
 		}

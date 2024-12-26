@@ -1,6 +1,9 @@
 #include "GrammarParser.h"
 #include "InputHandler.h"
+#include "CodeGenerator.h"
+#include "../Lex/Lex.h"
 #include <queue>
+#include <stack>
 #include <fstream>
 
 using namespace std;
@@ -207,6 +210,16 @@ ElementDict::~ElementDict()
 TerminalElement::TerminalElement(string _type, string _val) : type(_type), val(_val)
 {
   isTerminal = true;
+}
+
+const string& TerminalElement::getType() const
+{
+  return type;
+}
+
+const string& TerminalElement::getVal() const
+{
+  return val;
 }
 
 bool TerminalElement::operator==(const AlgElement &right)
@@ -816,4 +829,71 @@ void GrammarParser::processGrammarRule()
 
 void GrammarParser::LR1Main()
 {
+  prepareLex();
+  stack<int> stateStack;
+  stack<Expr *> symbolStack;
+  stateStack.push(0);
+  CodeGenerator codegenerator;
+  while (true)
+  {
+    int currentState = stateStack.top();
+    NametabItem curItem;
+    int res = readNext(curItem);
+    TerminalElement* curSymbol = nullptr;
+    if(res == FINISHED){
+      curSymbol = new TerminalElement(*ElementDict::ENDCH);
+    }
+    else{
+      curSymbol = new TerminalElement(curItem.type, curItem.name);
+    }
+    int currentSymbolNum = dict.findElem(*curSymbol);
+    LRItem item = chart.get(currentState, currentSymbolNum);
+
+    switch (item.action)
+    {
+    case SHIFT:
+    {
+      stateStack.push(item.index);
+      Expr *shiftE = new Expr();
+      if(curSymbol->getType() == SYMBOL){
+        shiftE->place = curSymbol->getVal();
+      }
+      symbolStack.push(shiftE);
+      break;
+    }
+    case REDUCE:
+    {
+      ProductionAlg prod = getProductionAlg(item.index);
+      int gotoState = chart.get(stateStack.top(), currentSymbolNum).index;
+      stateStack.push(gotoState);
+      codegenerator.GenerateCode(prod, stateStack, symbolStack);
+      break;
+    }
+
+    case GOTO:
+      stateStack.push(item.index);
+      break;
+
+    case ACCEPT:
+      return;
+
+    case ERROR:
+      throw GrammarException("语法分析错误：非法语句构成");
+      return;
+    default:
+      throw GrammarException("语法分析错误：LR分析表元素非法");
+      return;
+    }
+  }
+}
+
+// -------- GrammarException类的成员函数实现 --------
+GrammarException::GrammarException(const std::string &msg)
+{
+  _msg = msg;
+}
+
+const char *GrammarException::what()
+{
+  return _msg.c_str();
 }

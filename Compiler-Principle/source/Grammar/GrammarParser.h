@@ -1,7 +1,9 @@
+#pragma once
 #include <vector>
 #include <string>
 #include <set>
 #include <map>
+#include <exception>
 #include <iostream> // !!! debug
 #include <iomanip>  // !!! debug
 
@@ -37,6 +39,8 @@ class TerminalElement : public AlgElement
 public:
   TerminalElement(std::string _type = "", std::string _val = "");
   bool operator==(const AlgElement &right) override;
+  inline const std::string& getType() const;
+  inline const std::string& getVal() const;
   void print()
   {
     std::cout << "id: " << getId() << " type: " << type << " " << " val: " << val << std::endl;
@@ -71,7 +75,6 @@ private:
   std::vector<std::set<int>> firstSet;
   GrammarParser *parser;
   void _calculateFirst(int curElem, std::vector<bool> &calcState);
-  int findElem(const AlgElement &elem) const;
 
 public:
   static TerminalElement *const CANDIDATEMARK; // 候选式符 |
@@ -80,6 +83,7 @@ public:
   static NonTerminalElement *const STARTSYMBOL;
   void init(GrammarParser *_parser);
   void createElem(AlgElement *elem);
+  int findElem(const AlgElement &elem) const;
   int findElem(const std::string &elemName) const;
   int findElem(const std::string &elemType, const std::string &elemVal) const;
   inline AlgElement *getElem(int index) const;
@@ -231,4 +235,13 @@ public:
   void printAlgs() const;
   void processGrammarRule();
   void LR1Main();
+};
+
+class GrammarException : public std::exception
+{
+  std::string _msg;
+
+public:
+  GrammarException(const std::string &msg = "语法分析错误");
+  const char *what();
 };
