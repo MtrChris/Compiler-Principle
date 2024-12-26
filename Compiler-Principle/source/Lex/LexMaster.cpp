@@ -133,7 +133,10 @@ void prepareLex()
 			
 			auto b = map<int, string>();
 			auto a = NFAtoDFA(i.first, i.second, b);
-            printNFA(a, true, &b);
+			//printNFA(a, true, &b);
+			//auto c = map<int, string>();
+			//auto d = simplifyDFA(a, b, c);
+			//printNFA(d,true,&c);
 			DFAS.push_back(pair<Automaton*, map<int, string>>{a, b});
 		}
 		readCode(codeFilePath);

@@ -133,19 +133,24 @@ int readNext(NametabItem& item)
 	NametabItem a;
 	vector<state>p;
 	p.push_back(state{ nameIndex, currPos, lineCount,NametabItem(), 0 });
+	bool j = false;
 	for (auto& i : DFAS) {
 		nameIndex = p[0].a;
 		currPos = p[0].b;
 		lineCount = p[0].c;
-		int k = 0;
-		k = readnext(a, i.first, i.second, e);
+		int k = readnext(a, i.first, i.second, e);
 		if (k == NOT_FINISHED) {
 			p.push_back(state{ nameIndex, currPos, lineCount,a, k });
 		}
+		else if (k == FINISHED) {
+			j = true;
+		}
 
 	}
-
-	if (p.size() == 1) {
+	if (j) {
+		return FINISHED;
+	}
+    else if (p.size()==1) {
 		throw e;
 		return SYN_ERROR;
 	}
