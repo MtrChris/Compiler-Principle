@@ -86,3 +86,8 @@ int getEndState(Automaton* a, int st, int ch);
 void readCode(std::string path);
 int readNext(NametabItem& p);
 void prepareLex();
+
+class nameTable {
+	NametabItem& find(std::string);
+	bool update(std::string, NametabItem&);
+};
