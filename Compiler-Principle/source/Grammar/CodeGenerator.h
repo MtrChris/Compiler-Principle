@@ -15,25 +15,32 @@ public:
 	std::string arg1;
 	std::string arg2;
 	std::string result;
-	Quadruple(std::string op, std::string arg1, std::string arg2, std::string result) {}
+	int resultQuad = 0;
+	Quadruple(std::string _op, std::string _arg1, std::string _arg2, std::string _result);
+	Quadruple(std::string _op, std::string _arg1, std::string _arg2, int _resultQuad);
 };
 
 class Expr
 {
 public:
-	std::string place = "";
-	int nextList = -1;
-	int trueList = -1;
-	int falseList = -1;
-	int quad = -1;
+	std::string place;
+	int nextList;
+	int trueList;
+	int falseList;
+	int quad;
+	Expr(std::string _place = "");
 };
 class CodeGenerator
 {
 private:
 	std::vector<Quadruple> intermediateCode;
-	int nextStat;
+	int nextQuad;
 
 public:
-	void emit(Quadruple q) {}
-	// void GenerateCode(ProductionAlg prod, std::stack<int>& stateStack, std::stack<Expr*>& symbolStack) {}
+	int tempCount = 0;
+	void emit(Quadruple q);
+	void backpatch(int list, int quad);
+	int merge(int list1, int list2);
+	int merge(int list1, int list2, int list3);
+	void GenerateCode(ProductionAlg prod, std::stack<int>& stateStack, std::stack<Expr*>& symbolStack);
 };
