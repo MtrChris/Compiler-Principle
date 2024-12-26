@@ -1,20 +1,18 @@
-#include "Lex.h"
+ï»¿#include "Lex.h"
 #include <fstream>
 #include <sstream>
 using namespace std;
 
 extern bitset<MAXCH>recognizeCh;
-// Ãû×Ö±í 
+
 extern vector<NametabItem> nametab;
 extern vector<pair<Automaton*, map<int, string>>>DFAS;
-// ´æ´¢´úÂëÎÄ¼ş 
 extern vector<string> codes;
 
-int nameIndex = 0;	// Ãû×ÖĞòºÅ£¨´Ó0¿ªÊ¼£© 
-int currPos = 0;	// µ±Ç°×Ö·ûÏÂ±ê¼´ÁĞÊı£¨´Ó0¿ªÊ¼£© 
-int lineCount = 0;	// ĞĞÊı £¨´Ó0¿ªÊ¼£©
-
-// ÔÚÃû×Ö±íÀïÕÒÊÇ·ñÒÑÓĞname£¬ÕÒµ½·µ»ØÏÂ±ê£¬·ñÔò·µ»Ø-1 
+int nameIndex = 0;	
+int currPos = 0;	
+int lineCount = 0;	
+ 
 int findName(string name) {
 	for (int i = 0; i < nametab.size(); i++) {
 		if (nametab[i].name == name) {
@@ -24,13 +22,9 @@ int findName(string name) {
 	return -1;
 }
 
-// Ã¿µ÷ÓÃÒ»´ÎÊ¶±ğÒ»¸öĞÂ´Ê
-// item: NametabItem --> Ê¶±ğµ½µÄ´Ê 
-// ·µ»ØÖµ: SYN_ERROR --> Óï·¨´íÎó 
-//		   NOT_FINISHED --> ¶ÁÈ¡Î´Íê³É 
-//		   FINISHED --> ¶ÁÈ¡Íê³É 
-int readnext(NametabItem& item,Automaton* dfa,map<int,string>& finalStates,string& error) {
-	string newName = ""; // ÇĞ³öÀ´µÄ´Ê 
+
+int readnext(NametabItem& item, Automaton* dfa, map<int, string>& finalStates, LexException error) {
+	string newName = ""; 
 	//printNFA(dfa);
 	int beginState = dfa->begin;
 	int nowState = beginState;
@@ -44,14 +38,14 @@ int readnext(NametabItem& item,Automaton* dfa,map<int,string>& finalStates,strin
 		return FINISHED;
 	}
 	else {
-		throw runtime_error("¶ÁÈ¡³¬¹ıÎÄ¼ş·¶Î§£¡");
+		throw LexException("è¯»å–è¶…è¿‡æ–‡ä»¶èŒƒå›´ï¼");
 	}
-	
+
 	int lineLength = codes[lineCount].length();
 	while (currPos <= lineLength) {
-		char ch = line[currPos];	// ×îºóÒ»¸ö×Ö·ûline[lineLength]ÊÇ'\0' 
-		arrvState = getEndState(dfa, nowState, ch);	// ¼ì²é×Ô¶¯»úÊÇ·ñÄÜ½ÓÊÜÕâ¸ö×Ö·û 
-		// ²»ÄÜ½ÓÊÜ 
+		char ch = line[currPos]; 
+		arrvState = getEndState(dfa, nowState, ch);	
+
 		if (arrvState == -1) {
 			if (nowState == dfa->begin) {
 				if (ch == ' ') {
@@ -60,7 +54,7 @@ int readnext(NametabItem& item,Automaton* dfa,map<int,string>& finalStates,strin
 				}
 				else if (!recognizeCh.test(ch)) {
 					newName += ch;
-					NametabItem nametabItem(-1, newName,newName, 0);
+					NametabItem nametabItem(-1, newName, newName, 0);
 					item = nametabItem;
 					currPos++;
 					if (currPos == lineLength) {
@@ -71,67 +65,56 @@ int readnext(NametabItem& item,Automaton* dfa,map<int,string>& finalStates,strin
 			}
 			auto it_fs = finalStates.find(nowState);
 			if (it_fs != finalStates.end()) {
-				// µ±Ç°µ½´ïÖÕÌ¬ 
 				if (currPos == lineLength) {
-					// ±¾ĞĞ¶ÁÍêÁË£¬¶ÁÏÂÒ»ĞĞ 
 					lineCount++, currPos = 0;
 				}
 
-				int res = findName(newName);	// ¼ì²éÊÇ·ñÊÇĞÂ´Ê 
+				int res = findName(newName);	
 				if (res == -1) {
 					NametabItem nametabItem(nameIndex++, newName, it_fs->second, 0);
 					item = nametabItem;
-					return NOT_FINISHED;	// »¹Î´½áÊø 
+					return NOT_FINISHED;	
 				}
 				else {
 
 					item = nametab[res];
-					return NOT_FINISHED;	// »¹Î´½áÊø 
+					return NOT_FINISHED;	
 				}
 			}
 			else {
 				ostringstream oss;
-				// µ±Ç°Ã»µ½ÖÕÌ¬£¬±¨´í 
 				if (line[currPos] == '\0') {
-					oss << "µÚ" << lineCount + 1 << "ĞĞµÚ" << currPos + 1 << "ÁĞ£º"
-						<< codes[lineCount] << " "
-						<< "Óï·¨´íÎó£ºÈ±ÉÙ×Ö·û¡£";
-					error = oss.str();
+				    error= LexException(FORMATEXCEPTION(lineCount + 1, currPos + 1, codes[lineCount], "ç¼ºå°‘å­—ç¬¦"));
 				}
 				else {
-					oss << "µÚ" << lineCount + 1 << "ĞĞµÚ" << currPos + 1 << "ÁĞ£º"
-						<< codes[lineCount] << " "
-						<< "Óï·¨´íÎó£º\"" << line[currPos] << "\"" << endl;
-					error = oss.str();
+					error= LexException(FORMATEXCEPTION(lineCount + 1, currPos + 1, codes[lineCount], line[currPos]));
 				}
-				return SYN_ERROR;	// ÍË³ö²¢·µ»ØÓï·¨´íÎó 
+
+				return SYN_ERROR;	
 			}
 		}
 		else {
-			// ¿ÉÒÔ½ÓÊÜ 
 			newName += ch;
 			nowState = arrvState;
 			currPos++;
 		}
 	}
 
-	return FINISHED;	// ´úÂëÎÄ¼ş¶ÁÈ¡Íê±Ï£¬lineCount == codes.size() 
+	return FINISHED;	
 }
 
-// ´Ó´úÂëÎÄ¼şÖĞ¶ÁÈ¡¾ä×Ó 
 void readCode(string path) {
 	ifstream file(path);
 	if (!file.is_open()) {
-		throw ios_base::failure("´úÂëÎÄ¼ş¶ÁÈ¡Ê§°Ü");
+		throw ios_base::failure("ä»£ç æ–‡ä»¶è¯»å–å¤±è´¥");
 	}
 
 	string line;
 	while (getline(file, line)) {
 		codes.push_back(line);
-		cout << line<<endl;
+		cout << line << endl;
 	}
-	
-	// ¹Ø±ÕÎÄ¼ş
+
 	file.close();
 }
 
@@ -143,10 +126,10 @@ struct state {
 	int r;
 };
 
-int readNext(NametabItem& item) 
+int readNext(NametabItem& item)
 {
 
-	string e;
+	LexException e;
 	NametabItem a;
 	vector<state>p;
 	p.push_back(state{ nameIndex, currPos, lineCount,NametabItem(), 0 });
@@ -155,15 +138,15 @@ int readNext(NametabItem& item)
 		currPos = p[0].b;
 		lineCount = p[0].c;
 		int k = 0;
-		k= readnext(a, i.first, i.second,e);
-		if (k == NOT_FINISHED ) {
+		k = readnext(a, i.first, i.second, e);
+		if (k == NOT_FINISHED) {
 			p.push_back(state{ nameIndex, currPos, lineCount,a, k });
 		}
-		
+
 	}
-	
-	if (p.size()==1) {
-		cout << e;
+
+	if (p.size() == 1) {
+		throw e;
 		return SYN_ERROR;
 	}
 	auto it = max_element(p.begin(), p.end(), [](state a, state b) {
@@ -178,6 +161,6 @@ int readNext(NametabItem& item)
 	nameIndex = it->a;
 	currPos = it->b;
 	lineCount = it->c;
-	nametab.push_back(item);	
+	nametab.push_back(item);
 	return it->r;
 }

@@ -6,6 +6,7 @@
 #include <iostream>
 #include <unordered_set>
 #include <algorithm>
+#include <exception>
 
 #define Epsilon 0
 #define MAXCH 256
@@ -22,6 +23,11 @@ using uint64 = unsigned long long int;
 #define END(x) ((int)(x))
 //将边x的起点和终点同时偏移y
 #define OFFSET(x,y) ((uint64)(x)+((uint64)(y)<<32)+y)
+
+//报错提示
+#define FORMATEXCEPTION(line, col, code, ch) \
+	"第" + to_string(line) + "行第" + to_string(col) + "列" + \
+	(code) + " 词法分析错误：\"" + (ch) + "\""\
 
 class Automaton {
 public: 
@@ -95,4 +101,13 @@ void prepareLex();
 class nameTable {
 	NametabItem& find(std::string);
 	bool update(std::string, NametabItem&);
+};
+
+class LexException: public std::exception
+{
+  std::string _msg;
+
+public:
+  LexException(const std::string &msg = "词法分析错误");
+  const char *what();
 };
