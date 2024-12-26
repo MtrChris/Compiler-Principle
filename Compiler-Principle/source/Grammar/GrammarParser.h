@@ -12,14 +12,14 @@
 class ProductionAlg;
 class GrammarParser;
 
-// äº§ç”Ÿå¼å…ƒç´ 
+// ²úÉúÊ½ÔªËØ
 class AlgElement
 {
   friend class ElementDict;
   int id;
 
 protected:
-  bool isTerminal; // æ˜¯å¦ä¸ºç»ˆç»“ç¬¦
+  bool isTerminal; // ÊÇ·ñÎªÖÕ½á·û
 public:
   AlgElement();
   inline bool getIsTerminal() const;
@@ -28,7 +28,7 @@ public:
   virtual void print() {} // !!! debug
 };
 
-// ç»ˆç»“ç¬¦ç±»
+// ÖÕ½á·ûÀà
 class TerminalElement : public AlgElement
 {
   std::string type;
@@ -37,18 +37,21 @@ class TerminalElement : public AlgElement
 public:
   TerminalElement(std::string _type = "", std::string _val = "");
   bool operator==(const AlgElement &right) override;
+  inline std::string getType() const;
+  inline std::string getVal() const;
   void print()
   {
     std::cout << "id: " << getId() << " type: " << type << " " << " val: " << val << std::endl;
   }
 };
 
-// éç»ˆç»“ç¬¦ç±»
+// ·ÇÖÕ½á·ûÀà
 class NonTerminalElement : public AlgElement
 {
-  std::string name; // éç»ˆç»“ç¬¦ç¬¦å·ä¸²
+  std::string name; // ·ÇÖÕ½á·û·ûºÅ´®
 public:
   NonTerminalElement(std::string _name = "");
+  inline std::string getName() const;
   bool operator==(const AlgElement &right) override;
   void print()
   {
@@ -56,7 +59,7 @@ public:
   }
 };
 
-// å…ƒç´ è¡¨ç±»çš„å®šä¹‰ï¼Œå­˜å‚¨äº§ç”Ÿå¼ä¸­çš„æ‰€æœ‰å…ƒç´ çš„ä¿¡æ¯
+// ÔªËØ±íÀàµÄ¶¨Òå£¬´æ´¢²úÉúÊ½ÖĞµÄËùÓĞÔªËØµÄĞÅÏ¢
 class ElementDict
 {
 private:
@@ -71,15 +74,15 @@ private:
   std::vector<std::set<int>> firstSet;
   GrammarParser *parser;
   void _calculateFirst(int curElem, std::vector<bool> &calcState);
-  int findElem(const AlgElement &elem) const;
 
 public:
-  static TerminalElement *const CANDIDATEMARK; // å€™é€‰å¼ç¬¦ |
-  static TerminalElement *const EMPTYWORD;     // ç©ºå­—
-  static TerminalElement *const ENDCH;         // ç»“æŸç¬¦
+  static TerminalElement *const CANDIDATEMARK; // ºòÑ¡Ê½·û |
+  static TerminalElement *const EMPTYWORD;     // ¿Õ×Ö
+  static TerminalElement *const ENDCH;         // ½áÊø·û
   static NonTerminalElement *const STARTSYMBOL;
   void init(GrammarParser *_parser);
   void createElem(AlgElement *elem);
+  int findElem(const AlgElement& elem) const;
   int findElem(const std::string &elemName) const;
   int findElem(const std::string &elemType, const std::string &elemVal) const;
   inline AlgElement *getElem(int index) const;
@@ -92,10 +95,10 @@ public:
   ~ElementDict();
 };
 
-// äº§ç”Ÿå¼ç±»
+// ²úÉúÊ½Àà
 class ProductionAlg
 {
-  // äº§ç”Ÿå¼ï¼šleftElem -> rightAlg
+  // ²úÉúÊ½£ºleftElem -> rightAlg
 public:
   int id;
   AlgElement *leftElem;
@@ -111,13 +114,13 @@ public:
   inline AlgElement *getLeftElem() const;
 };
 
-// DFAç»“ç‚¹çš„äº§ç”Ÿå¼ç±»
+// DFA½áµãµÄ²úÉúÊ½Àà
 class DFANodeAlg
 {
   int algId;
-  int curpos; // å½“å‰é˜…è¯»çš„ä½ç½®
+  int curpos; // µ±Ç°ÔÄ¶ÁµÄÎ»ÖÃ
 public:
-  std::set<int> prospectCh; // å±•æœ›ç¬¦
+  std::set<int> prospectCh; // Õ¹Íû·û
   DFANodeAlg(int _algId = -1, int _curpos = -1, std::set<int> prospectCh = std::set<int>());
   DFANodeAlg createNext() const;
   void getAlgMeta(std::pair<int, int> &res) const;
@@ -130,7 +133,7 @@ public:
   bool operator<(const DFANodeAlg &right) const;
 };
 
-// è¯­æ³•DFAè½¬ç§»ç±»
+// Óï·¨DFA×ªÒÆÀà
 class GrammarDFATransfer
 {
   int srcId;
@@ -147,7 +150,7 @@ public:
   void print();
 };
 
-// è¯­æ³•DFAç»“ç‚¹ç±»
+// Óï·¨DFA½áµãÀà
 class GrammarDFANode
 {
   friend class GrammarDFA;
@@ -164,13 +167,13 @@ public:
   bool operator==(const GrammarDFANode &right) const;
 };
 
-// è¯­æ³•DFAç±»
+// Óï·¨DFAÀà
 class GrammarDFA
 {
   GrammarParser *parser;
   std::set<GrammarDFANode> dfa;
   std::vector<GrammarDFATransfer *> transfer;
-  void expandNodeAlg(GrammarDFANode *node); // å¯¹DFAç»“ç‚¹çš„äº§ç”Ÿå¼è¿›è¡Œæ‰©å±•
+  void expandNodeAlg(GrammarDFANode *node); // ¶ÔDFA½áµãµÄ²úÉúÊ½½øĞĞÀ©Õ¹
   bool getProspectCh(const DFANodeAlg &alg, std::set<int> &res);
 
 public:
@@ -181,7 +184,7 @@ public:
   inline const std::set<GrammarDFANode> &getNodes() const;
 };
 
-// LRåˆ†æè¡¨é¡¹ç›®ç±»
+// LR·ÖÎö±íÏîÄ¿Àà
 enum ActionType
 {
   ACCEPT,
@@ -200,7 +203,7 @@ public:
   void setItem(ActionType _action, int _index = -1);
 };
 
-// LRåˆ†æè¡¨ç±»
+// LR·ÖÎö±íÀà
 class LRChart
 {
   std::vector<std::vector<LRItem>> chart;
@@ -213,7 +216,7 @@ public:
   void print() const;
 };
 
-// è¯­æ³•åˆ†æå™¨ç±»
+// Óï·¨·ÖÎöÆ÷Àà
 class GrammarParser
 {
   friend class ElementDict;
@@ -230,5 +233,5 @@ public:
   inline const ElementDict &getDict() const;
   void printAlgs() const;
   void processGrammarRule();
-  void LR1Main();
+  void LR1Main(const std::vector<AlgElement *>& input);
 };
