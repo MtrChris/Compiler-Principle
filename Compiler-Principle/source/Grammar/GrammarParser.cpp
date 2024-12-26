@@ -1,7 +1,8 @@
 #include "GrammarParser.h"
 #include "InputHandler.h"
 #include <queue>
-// #include <algorithm> // sort
+#include <fstream>
+
 using namespace std;
 
 // -------- AlgElement类的成员函数实现 --------
@@ -157,12 +158,12 @@ void ElementDict::_calculateFirst(int curElem, vector<bool> &calcState)
       // 将该非终结符的所有FIRST集合（除了空字）加入
       for (set<int>::iterator it = firstSet[algElemId].begin(); it != firstSet[algElemId].end(); it++)
       {
-        if (*it != 1)
+        if (*it != EMPTYWORDID)
         {
           firstSet[curElem].insert(*it);
         }
       }
-      // 该非终结符不包含空集时，查找下一个产生式
+      // 该非终结符不包含空字时，查找下一个产生式
       if (firstSet[algElemId].find(EMPTYWORDID) == firstSet[algElemId].end())
       {
         break;
@@ -474,8 +475,15 @@ bool GrammarDFANode::operator==(const GrammarDFANode &right) const
 // -------- GrammarDFA类的成员函数实现 --------
 void GrammarDFA::expandNodeAlg(GrammarDFANode *node)
 {
-  for (set<DFANodeAlg>::iterator algItem = node->nodeAlg.begin(); algItem != node->nodeAlg.end(); algItem++)
+  queue<const DFANodeAlg *> q; // 记录未进行扩展的表达式编号
+  for (set<DFANodeAlg>::iterator it = node->nodeAlg.begin(); it != node->nodeAlg.end(); it++)
   {
+    q.push(&(*it));
+  }
+  while (!q.empty())
+  {
+    const DFANodeAlg *algItem = q.front();
+    q.pop();
     if (algItem->isAtEnd(parser))
     {
       continue; // 该产生式已到结尾，不扩展
@@ -494,10 +502,11 @@ void GrammarDFA::expandNodeAlg(GrammarDFANode *node)
         curProspect.insert(*it);
       }
     }
-    // 将所有该非终结符的产生式添加到newAlgs中
+    // 将所有该非终结符的产生式添加到节点中
     const vector<int> &chAlgs = parser->getClassifiedAlgs(curElem->getId());
     for (int j = 0; j < chAlgs.size(); j++)
     {
+      bool expandFlag = true;
       if (node->algIndex.find({chAlgs[j], 0}) == node->algIndex.end())
       {
         // 未找到目标产生式，则添加该产生式
@@ -506,13 +515,22 @@ void GrammarDFA::expandNodeAlg(GrammarDFANode *node)
       else
       {
         // 目标产生式已经在数组中，则更新产生式的展望符
+        expandFlag = false; // 暂定产生式不需要再次扩展
         DFANodeAlg targetAlg(node->algIndex[{chAlgs[j], 0}]);
         node->nodeAlg.erase(targetAlg);
         for (set<int>::iterator it = curProspect.begin(); it != curProspect.end(); it++)
         {
-          targetAlg.prospectCh.insert(*it);
+          if (targetAlg.prospectCh.find(*it) == targetAlg.prospectCh.end())
+          {
+            targetAlg.prospectCh.insert(*it);
+            expandFlag = true; // 产生式更新了展望符，需要重新扩展
+          }
         }
         node->addAlg(targetAlg);
+      }
+      if (expandFlag)
+      {
+        q.push(&node->algIndex[{chAlgs[j], 0}]);
       }
     }
   }
@@ -586,16 +604,6 @@ void GrammarDFA::buildDFA()
     map<int, GrammarDFANode *> chTransfer; // 记录每个符号对应的转移状态
     for (set<DFANodeAlg>::iterator algItem = curNode->nodeAlg.begin(); algItem != curNode->nodeAlg.end(); algItem++)
     {
-      // !!! debug
-      // pair<int, int> algInfo;
-      // algItem->getAlgMeta(algInfo);
-      // cout << curNode->stateId << " " << algInfo.first << " [" << algInfo.second << "] (";
-      // for (set<int>::iterator it = algItem->prospectCh.begin(); it != algItem->prospectCh.end(); it++)
-      // {
-      //   cout << *it << " ";
-      // }
-      // cout << ")" << endl;
-      // ---- !!! debug
       if (algItem->isAtEnd(parser))
       {
         continue; // 该产生式已到结尾，不需要转移
@@ -614,12 +622,6 @@ void GrammarDFA::buildDFA()
     }
     delete curNode;
   }
-  // !!! debug
-  // for (int i = 0; i < transfer.size(); i++)
-  // {
-  //   transfer[i]->print();
-  // }
-  // ---- !!! debug
 }
 
 const set<GrammarDFANode> &GrammarDFA::getNodes() const
@@ -773,14 +775,16 @@ void GrammarParser::processGrammarRule()
 {
   try
   {
-    int num;
-    cin >> num;
-    cin.ignore(100000000, '\n');
-    dict.init(this);
-    for (int i = 0; i < num; i++)
+    ifstream grammarInput;
+    grammarInput.open("grammarInput.txt");
+    if (!grammarInput.is_open())
     {
-      string s;
-      getline(cin, s);
+      throw InputException("无法打开grammarInput.txt进行读入");
+    }
+    dict.init(this);
+    string s;
+    while (getline(grammarInput, s))
+    {
       ProductionAlg alg;
       alg.readFromStr(s, dict);
       algs.push_back(alg);
@@ -812,12 +816,4 @@ void GrammarParser::processGrammarRule()
 
 void GrammarParser::LR1Main()
 {
-}
-
-// !!! debug
-int main()
-{
-  GrammarParser parser;
-  parser.processGrammarRule();
-  return 0;
 }
