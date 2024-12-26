@@ -804,10 +804,10 @@ void GrammarParser::processGrammarRule()
   try
   {
     ifstream grammarInput;
-    grammarInput.open("grammarInput.txt");
+    grammarInput.open(GRAMMARINPUTPATH);
     if (!grammarInput.is_open())
     {
-      throw InputException("无法打开grammarInput.txt进行读入");
+      throw InputException("无法打开" + string(GRAMMARINPUTPATH) + "进行读入");
     }
     dict.init(this);
     string s;
@@ -906,15 +906,15 @@ void GrammarParser::LR1Main()
 void GrammarParser::printLog() const
 {
   ofstream& outFile = LogHandler::getInstance();
-  cout << "---------- 产生式表 ----------" << endl;
+  outFile << "---------- 产生式表 ----------" << endl;
   printAlgs(outFile);
-  cout << endl;
-  cout << "---------- 符号表 -------- " << endl;
+  outFile << endl;
+  outFile << "---------- 符号表 -------- " << endl;
   dict.print(outFile);
-  cout << endl;
-  cout << "---------- LR分析表 -----------" << endl;
+  outFile << endl;
+  outFile << "---------- LR分析表 -----------" << endl;
   chart.print(outFile);
-  cout << endl;
+  outFile << endl;
 }
 
 // -------- GrammarException类的成员函数实现 --------

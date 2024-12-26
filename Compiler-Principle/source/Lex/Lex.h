@@ -7,7 +7,9 @@
 #include <unordered_set>
 #include <algorithm>
 #include <exception>
+#include "../Grammar/OutputHandler.h"
 
+#define LEXPATH "LexRule.txt"
 #define Epsilon 0
 #define MAXCH 256
 #define SYN_ERROR -1
@@ -59,7 +61,8 @@ struct NametabItem {
 		this->value = value;
 	}
 	void print() {
-		std::cout << "序号 " << this->index
+		std::ofstream& outFile = LogHandler::getInstance();
+		outFile << "序号 " << this->index
 			<< "，名字 " << this->name
 			<< "，类型 " << this->type
 			<< "，值 " << this->value << std::endl;

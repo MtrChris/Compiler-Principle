@@ -112,7 +112,7 @@ void readCode(string path) {
 	string line;
 	while (getline(file, line)) {
 		codes.push_back(line);
-		cout << line << endl;
+		// cout << line << endl;
 	}
 
 	file.close();
