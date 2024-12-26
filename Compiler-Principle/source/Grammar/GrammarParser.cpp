@@ -877,10 +877,7 @@ void GrammarParser::LR1Main()
     case REDUCE:
     {
       ProductionAlg prod = getProductionAlg(item.index);
-      for(int i = 0; i < prod.getAlgLength(); i++){
-        stateStack.pop();
-      }
-      // codegenerator.GenerateCode(prod, stateStack, symbolStack);
+      codegenerator.GenerateCode(prod, stateStack, symbolStack);
       curSymbol = prod.leftElem->getId();
       break;
     }
@@ -891,7 +888,11 @@ void GrammarParser::LR1Main()
       break;
 
     case ACCEPT:
+    {
+      OutputHandler handler;
+      handler.writeOutput(codegenerator.intermediateCode);
       return;
+    }
 
     case ERROR:
       throw GrammarException("语法分析错误：非法语句构成");

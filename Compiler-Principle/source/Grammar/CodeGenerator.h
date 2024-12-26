@@ -32,11 +32,11 @@ public:
 };
 class CodeGenerator
 {
-private:
+public:
 	std::vector<Quadruple> intermediateCode;
 	int nextQuad;
 
-public:
+// public:
 	int tempCount = 0;
 	void emit(Quadruple q);
 	void backpatch(int list, int quad);
