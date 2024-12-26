@@ -1,5 +1,12 @@
 # Compiler-Principle
 
+# 程序使用说明
+
+- 语法规则输入文件位于`GrammarRule.txt`中
+- 词法规则输入文件位于`LexRule.txt`中
+- 代码文件名需要在运行时手动输入
+- 程序运行日志，包括语法分析的LR分析表、词法分析的DFA等会输出到`debug.log`中
+
 # 词法分析完成情况
 
 完成从正规式到NFA的转化

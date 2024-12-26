@@ -89,28 +89,29 @@ Automaton* connect(Automaton* p, Automaton* q)
 //打印自动机
 void printNFA(Automaton* p, bool i, map<int, string>* q)
 {
+    ofstream& outFile = LogHandler::getInstance();
     if (i) {
-        cout << p->begin << endl;
-        cout << p->end << endl;
+        outFile << p->begin << endl;
+        outFile << p->end << endl;
     }
     for (auto& a : p->edges) {
-        cout << BEGIN(a.first) << "    " << END(a.first) << "   ";
+        outFile << BEGIN(a.first) << "    " << END(a.first) << "   ";
         if (a.second.test(0)) {
-            cout << '&';
+            outFile << '&';
         }
         for (int i = 1; i < a.second.size(); i++) {
             if (a.second.test(i))
                 // cout << (char)i;
-                cout << (char)i << ' ';
+                outFile << (char)i << ' ';
         }
         if (q != NULL) {
             auto k = q->find(END(a.first));
             if (k != q->end()) {
                 // cout << "  " << "终态：" << k->second;
-                cout << "  " << "Final State:" << k->second;
+                outFile << "  " << "Final State:" << k->second;
             }
         }
-        cout << endl;
+        outFile << endl;
     }
 
 }

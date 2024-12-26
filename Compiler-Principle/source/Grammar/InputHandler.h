@@ -6,11 +6,11 @@ class InputException : public std::exception
   std::string _msg;
 
 public:
-  InputException(const std::string &msg = "è¾“å…¥å¼‚å¸¸");
+  InputException(const std::string &msg = "ÊäÈëÒì³£");
   const char *what();
 };
 
-// è¾“å…¥è¯»å–ç±»
+// ÊäÈë¶ÁÈ¡Àà
 class InputReader
 {
   std::string text;
