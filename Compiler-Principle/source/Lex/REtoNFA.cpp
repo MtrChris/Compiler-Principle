@@ -211,6 +211,21 @@ void processLex()
 	for (auto i : lexs) {
 		auto j = i.find_first_of('>');
 		auto k = i.substr(j + 1, i.size() - j - 1);
-		CompleteNFA.insert(pair<string, Automaton*>{i.substr(0, j),getNFA(k)});
+		auto p = i.substr(0, j);
+		if (p == "letter" || p == "num" || p == "nnum") {
+			Automaton* a = new Automaton();
+			a->begin = stateIndex++;
+			a->end = stateIndex++;
+			a->edges[EDGE(a->begin, a->end)];
+			for (auto ch : k) {
+				if (ch != '|') {
+					a->edges[EDGE(a->begin, a->end)].set(ch);
+				}
+			}
+			CompleteNFA.insert(pair<string, Automaton*>{p, a});
+		}
+		else {
+			CompleteNFA.insert(pair<string, Automaton*>{p, getNFA(k)});
+		}
 	}
 }

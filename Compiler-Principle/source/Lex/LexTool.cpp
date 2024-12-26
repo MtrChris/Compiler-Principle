@@ -60,6 +60,8 @@ Automaton* merge(Automaton* a,Automaton*b)
     return a;
 }
 
+
+
 //生成自动机的闭包
 Automaton* closure(Automaton* p) 
 {

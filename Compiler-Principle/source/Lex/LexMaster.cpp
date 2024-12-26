@@ -29,16 +29,21 @@ int main()
 
 }
 
-void prepareLex() {
-
-	cout << "输入词法路径" << endl;
-	cin >> path;
-	cout << "输入代码路径" << endl;
-	cin >> codeFilePath;
-	readRE(path);
-	processLex();
-	map<int, string>f;
-	auto totalA = mergeMultiA(f);
-	dfa = NFAtoDFA(totalA, f, finalStates);
-	readCode(codeFilePath);
+void prepareLex()
+{
+	try {
+		cout << "输入词法路径" << endl;
+		cin >> path;
+		cout << "输入代码路径" << endl;
+		cin >> codeFilePath;
+		readRE(path);
+		processLex();
+		map<int, string>f;
+		auto totalA = mergeMultiA(f);
+		dfa = NFAtoDFA(totalA, f, finalStates);
+		readCode(codeFilePath);
+	}
+	catch (exception e) {
+		cout << e.what();
+	}
 }
