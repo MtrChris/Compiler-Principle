@@ -212,7 +212,7 @@ void processLex()
 		auto j = i.find_first_of('>');
 		auto k = i.substr(j + 1, i.size() - j - 1);
 		auto p = i.substr(0, j);
-		if (p == "letter" || p == "num" || p == "nnum") {
+		if (k.find('(')==string::npos&&k.find('{')== string::npos &&k.find('*')== string::npos) {
 			Automaton* a = new Automaton();
 			a->begin = stateIndex++;
 			a->end = stateIndex++;
