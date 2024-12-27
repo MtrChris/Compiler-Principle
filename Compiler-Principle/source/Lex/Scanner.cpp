@@ -25,7 +25,6 @@ int findName(string name) {
 
 int readnext(NametabItem& item, Automaton* dfa, map<int, string>& finalStates, LexException error) {
 	string newName = ""; 
-	//printNFA(dfa);
 	int beginState = dfa->begin;
 	int nowState = beginState;
 	int arrvState;
@@ -46,10 +45,14 @@ int readnext(NametabItem& item, Automaton* dfa, map<int, string>& finalStates, L
 		char ch = line[currPos]; 
 		arrvState = getEndState(dfa, nowState, ch);	
 
-		if (arrvState == -1) {
+		if (arrvState == -1||currPos==lineLength) {
 			if (nowState == dfa->begin) {
 				if (ch == ' ') {
 					currPos++;
+					if (currPos == lineLength) {
+						lineCount++, currPos = 0;
+						lineLength= codes[lineCount].length();
+					}
 					continue;
 				}
 				else if (!recognizeCh.test(ch)) {
@@ -63,6 +66,7 @@ int readnext(NametabItem& item, Automaton* dfa, map<int, string>& finalStates, L
 					return NOT_FINISHED;
 				}
 			}
+			
 			auto it_fs = finalStates.find(nowState);
 			if (it_fs != finalStates.end()) {
 				if (currPos == lineLength) {
@@ -76,13 +80,11 @@ int readnext(NametabItem& item, Automaton* dfa, map<int, string>& finalStates, L
 					return NOT_FINISHED;	
 				}
 				else {
-
 					item = nametab[res];
 					return NOT_FINISHED;	
 				}
 			}
 			else {
-				ostringstream oss;
 				if (line[currPos] == '\0') {
 				    error= LexException(FORMATEXCEPTION(lineCount + 1, currPos + 1, codes[lineCount], "缺少字符"));
 				}
