@@ -121,47 +121,42 @@ void processLex(vector<pair<Automaton*, map<int, string>>>&nfas)
 
 void prepareLex()
 {
-	try {
-		// cout << "输入词法路径" << endl;
-		// cin >> path;
-		cout << "输入代码路径" << endl;
-		cin >> codeFilePath;
-		readRE(LEXPATH);
-		vector<pair<Automaton*, map<int, string>>>nfas;
-		processLex(nfas);
-		for (auto& i : nfas) {
-			
-			auto b = map<int, string>();
-			auto a = NFAtoDFA(i.first, i.second, b);
-			//printNFA(a, true, &b);
-			auto c = map<int, string>();
-			auto d = simplifyDFA(a, b, c);
-			//printNFA(d,true,&c);
-			DFAS.push_back(pair<Automaton*, map<int, string>>{d,c});
-		}
-		readCode(codeFilePath);
+	cout << "输入词法路径" << endl;
+	cin >> path;
+	cout << "输入代码路径" << endl;
+	cin >> codeFilePath;
+	readRE(path);
+	vector<pair<Automaton*, map<int, string>>>nfas;
+	processLex(nfas);
+	for (auto& i : nfas) {
+		auto b = map<int, string>();
+		auto a = NFAtoDFA(i.first, i.second, b);
+		//printNFA(a, true, &b);
+		auto c = map<int, string>();
+		auto d = simplify(a, b, c);
+		//printNFA(d,true,&c);
+		DFAS.push_back(pair<Automaton*, map<int, string>>{d,c});
 	}
-	catch (exception e) {
-		cout << e.what();
-	}
+	readCode(codeFilePath);
 }
-
-// int main()
-// {
-// 	try {
-// 		prepareLex();
-// 		NametabItem a;
-// 		int b = 0;
-// 		while (1) {
-// 			b = readNext(a);
-// 			if (b == FINISHED || b == -1) {
-// 				break;
-// 			}
-// 			cout << a.name << "  " << a.type << endl;
-// 		}
-// 		return 0;
-// 	}
-// 	catch (exception e) {
-// 		cout << e.what();
-// 	}
-// }
+/*
+ int main()
+ {
+ 	try {
+ 		prepareLex();
+ 		NametabItem a;
+ 		int b = 0;
+ 		while (1) {
+			b = readNext(a);
+		if (b == FINISHED || b == -1) {
+			break;
+		}
+			cout << a.name << "  " << a.type << endl;
+		}
+ 		return 0;
+ 	}
+ 	catch (exception e) {
+		cout << e.what();
+ 	}
+ }
+ */

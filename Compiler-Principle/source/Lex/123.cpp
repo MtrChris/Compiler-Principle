@@ -57,14 +57,6 @@ Automaton* simplify(Automaton* oldA, map<int, string>&oldS, map<int, string>&new
 			stateSet[0].insert(b);
 		}
 	}
-	cout << "******";
-	for (auto i : stateSet) {
-		for (auto j : i) {
-			cout << j << " ";
-		}
-		cout << endl;
-	}
-	cout << "******";
 	int size = 0;
 	map<int, unordered_set<int>>sets;
 	for (int size = 0; size != stateSet.size();) {
@@ -103,12 +95,7 @@ Automaton* simplify(Automaton* oldA, map<int, string>&oldS, map<int, string>&new
 			}
 		}
 	}
-	for (auto i : stateSet) {
-		for (auto j : i) {
-			cout << j << " ";
-		}
-		cout << endl;
-	}
+
 	newA->begin = findIndex(0, stateSet);
 
 	for (int i = 0; i< stateSet.size();i++) {
