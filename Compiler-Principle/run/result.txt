@@ -1,0 +1,7 @@
+0   define    int       -         a         
+1   define    int       -         b         
+2   define    int       -         cnt       
+3   define    bool      -         res       
+4   j<        a         10        $L6       
+5   j         -         -         $L0       
+6   =         1         -         cnt       
