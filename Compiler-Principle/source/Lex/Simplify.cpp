@@ -20,7 +20,7 @@ Automaton* simplify(Automaton* oldA, map<int, string>&oldS, map<int, string>&new
 	stateSet.push_back(unordered_set<int>());
 	map<string,int >SS;
 	auto newA = new Automaton();
-	for (auto i : oldA->edges) {
+	for (auto& i : oldA->edges) {
 		int a = BEGIN(i.first), b = END(i.first);
 		auto c = oldS.find(a);
 		if (c != oldS.end()) {

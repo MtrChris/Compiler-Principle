@@ -113,7 +113,6 @@ void printNFA(Automaton* p, bool i, map<int, string>* q)
         }
         outFile << endl;
     }
-
 }
 
 //获得指定起点的所有边

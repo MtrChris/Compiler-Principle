@@ -121,11 +121,9 @@ void processLex(vector<pair<Automaton*, map<int, string>>>&nfas)
 
 void prepareLex()
 {
-	cout << "输入词法路径" << endl;
-	cin >> path;
 	cout << "输入代码路径" << endl;
 	cin >> codeFilePath;
-	readRE(path);
+	readRE(LEXPATH);
 	vector<pair<Automaton*, map<int, string>>>nfas;
 	processLex(nfas);
 	for (auto& i : nfas) {
@@ -139,24 +137,23 @@ void prepareLex()
 	}
 	readCode(codeFilePath);
 }
-/*
- int main()
- {
- 	try {
- 		prepareLex();
- 		NametabItem a;
- 		int b = 0;
- 		while (1) {
-			b = readNext(a);
-		if (b == FINISHED || b == -1) {
-			break;
-		}
-			cout << a.name << "  " << a.type << endl;
-		}
- 		return 0;
- 	}
- 	catch (exception e) {
-		cout << e.what();
- 	}
- }
- */
+
+ //int main()
+ //{
+ //	try {
+ //		prepareLex();
+ //		NametabItem a;
+ //		int b = 0;
+ //		while (1) {
+	//		b = readNext(a);
+	//	if (b == FINISHED || b == -1) {
+	//		break;
+	//	}
+	//		cout << a.name << "  " << a.type << endl;
+	//	}
+ //		return 0;
+ //	}
+ //	catch (exception e) {
+	//	cout << e.what();
+ //	}
+ //}

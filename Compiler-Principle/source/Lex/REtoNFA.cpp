@@ -97,29 +97,21 @@ Automaton* getNFA(string RE)
 	vector<int>re;
 	automatons.clear();
 	for (int i = 0; i < RE.length();) {
-		if (RE[i] != '{') {
-			if (RE[i] == '\\') {
-				i++;
-				if (recognizeCh.test(RE[i])) {
-					auto p = new Automaton(RE[i]);
-					automatons.insert(pair<int, Automaton*>{aIndex, p});
-					re.push_back(aIndex++);
-				}
-				else {
-					throw LexException("不可识别字符(int)" +(int)RE[i]);
-				}
-			}
-			else if (RE[i]=='*'||RE[i]=='|'||RE[i]=='('||RE[i]==')') {
-				re.push_back((int)RE[i]);
-			}
-			else {
+		if (RE[i] == '\\') {
+			i++;
+			if (recognizeCh.test(RE[i])) {
 				auto p = new Automaton(RE[i]);
 				automatons.insert(pair<int, Automaton*>{aIndex, p});
 				re.push_back(aIndex++);
 			}
-				
+			else {
+				throw LexException("不可识别字符" +RE[i]);
+			}
 		}
-		else {
+		else if (RE[i]=='*'||RE[i]=='|'||RE[i]=='('||RE[i]==')') {
+			re.push_back((int)RE[i]);
+		}
+		else if(RE[i]=='{'){
 			int j = i + 1;
 			while (RE[j] != '}' && j < RE.length()) {
 				j++;
@@ -138,6 +130,14 @@ Automaton* getNFA(string RE)
 			signA.insert(p);
 			re.push_back(aIndex++);
 			continue;
+		}
+		else if(recognizeCh.test(RE[i])){
+			auto p = new Automaton(RE[i]);
+			automatons.insert(pair<int, Automaton*>{aIndex, p});
+			re.push_back(aIndex++);
+		}
+		else {
+			throw LexException("不可识别字符" + RE[i]);
 		}
 		i++;
 	}
