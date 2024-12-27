@@ -95,7 +95,7 @@ Automaton* NFAtoDFA(Automaton* oldA, std::map<int, std::string>& finalStates, st
 // SimplifyDFA.cpp
 Automaton* simplifyDFA(Automaton* oldA, std::map<int, std::string>& finalStates, std::map<int, std::string>& simplifiedFinalStates);
 int getEndState(Automaton* a, int st, int ch);
-
+Automaton* simplify(Automaton* oldA, std::map<int, std::string>& oldS, std::map<int, std::string>& newS);
 // Scanner.cpp
 void readCode(std::string path);
 int readNext(NametabItem& p);
