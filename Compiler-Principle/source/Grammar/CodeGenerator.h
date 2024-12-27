@@ -5,9 +5,11 @@
 #include <iostream>
 #include "GrammarParser.h"
 
-#define ASSIGN "assign"
-#define SYMBOL "symbol"
-#define IFWORD "IF"
+#define TYPE "TYPE"
+#define ASSIGN "ASSIGN"
+#define SYMBOL "SYMBOL"
+#define RELOP "RELOP"
+#define OPERATOR "OPERATOR"
 
 class Quadruple
 {
@@ -33,12 +35,13 @@ public:
 };
 class CodeGenerator
 {
-public:
+private:
 	std::vector<Quadruple> intermediateCode;
 	int nextQuad;
-	GrammarParser* parser;
-// public:
+
+public:
 	int tempCount = 0;
+	void printcode();
 	void emit(Quadruple q);
 	void backpatch(int list, int quad);
 	int merge(int list1, int list2);
