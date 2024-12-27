@@ -10,6 +10,10 @@
 #define SYMBOL "SYMBOL"
 #define RELOP "RELOP"
 #define OPERATOR "OPERATOR"
+#define COMPARATOR "COMPARATOR"
+#define IFSTMT "IF"
+#define LEFTBRACKET "LEFTBRACKET"
+#define RIGHTBRACKET "RIGHTBRACKET"
 
 class Quadruple
 {

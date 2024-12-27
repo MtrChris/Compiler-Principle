@@ -121,63 +121,37 @@ void CodeGenerator::GenerateCode(ProductionAlg prod, stack<int>& stateStack, sta
             res->place = "$T" + to_string(tempCount++);
             emit(Quadruple(symbolInfo[i]->place, leftE->place, rightE->place, res->place));
         }
-        else if (curTerminal->getType() == RELOP)
+        else if (curTerminal->getType() == COMPARATOR)
         {
             res->trueList = nextQuad;
             res->falseList = nextQuad + 1;
             Expr* leftE = symbolInfo[i - 1];
             Expr* rightE = symbolInfo[i + 1];
-            res->place = "$S" + nextQuad;
+            res->place = "$B" + to_string(tempCount++);
             emit(Quadruple("j" + symbolInfo[i]->place, leftE->place, rightE->place, 0));
             emit(Quadruple("j", "-", "-", 0));
         }
-        //{
-        //    Expr E, E1, E2, M;
-        //    //E -> E1 or M E2
-        //    backpatch(E1.falseList, M.quad);
-        //    E.trueList = merge(E1.trueList, E2.trueList);
-        //    E.falseList = E2.falseList;
-        //    //E -> E1 and M E2
-        //    backpatch(E1.trueList, M.quad);
-        //    E.trueList = E2.trueList;
-        //    E.falseList = merge(E1.falseList, E2.falseList);
-        //    //E -> not E1
-        //    E.trueList = E1.falseList;
-        //    E.falseList = E1.trueList;
-        //    //M->��
-        //    M.quad = nextQuad;
-        //}
-        //if (RELOP)
-        //{
-        //    Expr E, E1, E2, M, op;
-        //    E.trueList = nextQuad;
-        //    E.falseList = nextQuad + 1;
-        //    emit(Quadruple("j" + op.place, E1.place, E2.place, 0));
-        //    emit(Quadruple("j", "-", "-", 0));
-        //}
-        // if (IFWORD)
-        // {
-        //    Expr S, E, S1, S2, E2, M, M1, M2, N;
-        //    //S->if E then M S1
-        //    backpatch(E.trueList, M.quad);
-        //    S.nextList = merge(E.falseList, S1.nextList);
-        //    //S->if E then M1 S1 N else M2 S2
-        //    backpatch(E.trueList, M1.quad);
-        //    backpatch(E.trueList, M2.quad);
-        //    S.nextList = merge(F. N.nextList, S2.nextList);
-        //    //M->��
-        //    M.quad = nextQuad;
-        //    //N->��
-        //    N.nextList = nextQuad;
-        //    emit(Quadruple("j", "-", "-", 0));
-        // }
-        // if (curTerminal->getType() == IFWORD) {
-
-        // }
-
-        // else {
-        //     tempStack.push(E0);
-        // }
+        else if (curTerminal->getType() == IFSTMT)
+        {
+            Expr* ifE = symbolInfo[i];
+            Expr* expE = symbolInfo[i + 2];
+            Expr* M = symbolInfo[i + 3];
+            Expr* S = symbolInfo[i + 5];
+            Expr* N = symbolInfo[i + 6];
+            backpatch(res->trueList, M->quad);
+            res->nextList = merge(expE->falseList, S->nextList);
+        }
+        else if (curTerminal->getType() == LEFTBRACKET)
+        {
+            Expr* M = symbolInfo[i];
+            M->quad = nextQuad;
+        }
+        else if (curTerminal->getType() == RIGHTBRACKET)
+        {
+            Expr* N = symbolInfo[i];
+            N->nextList = nextQuad;
+            emit(Quadruple("j", "-", "-", "0"));
+        }
     }
     symbolStack.push(res);
 }
