@@ -1,0 +1,7 @@
+int a;
+int b;
+int cnt;
+bool res;
+if (a < 10){
+  cnt = 1;
+}

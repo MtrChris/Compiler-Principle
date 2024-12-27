@@ -1,0 +1,11 @@
+program -> sentence | program sentence
+sentence -> define { DELIMMA } | assign { DELIMMA } | ifstmt | ifelse
+define -> { TYPE } { VARIABLE }
+assign -> { VARIABLE } { ASSIGN } expression
+expression -> expression { OPERATOR } expression
+expression -> { CONSTINT } | { CONSTREAL } | { VARIABLE } | boolexpr
+boolexpr -> { BOOLEAN } | boolexpr { BOOLOPERATE } boolexpr | expression { COMPARATOR } expression
+ifstmt -> { IF } { EXPRSTART } boolexpr { EXPREND } ifblockbegin program ifblockend
+ifblockbegin -> { BLOCKBEGIN }
+ifblockend -> { BLOCKEND }
+ifelse ->  { IF } { EXPRSTART } boolexpr { EXPREND } { BLOCKBEGIN } program { BLOCKEND } { ELSE } { BLOCKBEGIN } program { BLOCKEND }

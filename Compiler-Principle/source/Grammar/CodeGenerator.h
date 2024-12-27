@@ -14,6 +14,7 @@
 #define IFSTMT "IF"
 #define LEFTBRACKET "LEFTBRACKET"
 #define RIGHTBRACKET "RIGHTBRACKET"
+#define EXPREND "EXPREND"
 
 class Quadruple
 {
