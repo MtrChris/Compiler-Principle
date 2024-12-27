@@ -842,6 +842,7 @@ void GrammarParser::LR1Main()
   CodeGenerator codegenerator;
   codegenerator->parser = this;
   int curTerminal = -1;
+  string terminalName = "";
   int curSymbol = -1;
   while (true)
   {
@@ -853,7 +854,8 @@ void GrammarParser::LR1Main()
       }
       else{
         curTerminal = dict.findElem(curItem.type, curItem.name);
-        cout << curItem.type << " " << curItem.name << endl; // !!! debug
+        // cout << curItem.type << " " << curItem.name << endl; // !!! debug
+        terminalName = curItem.name;
       }
       curSymbol = curTerminal;
     }
@@ -866,11 +868,7 @@ void GrammarParser::LR1Main()
     case SHIFT:
     {
       stateStack.push(item.index);
-      Expr *shiftE = new Expr();
-      TerminalElement* terminalPtr = dynamic_cast<TerminalElement*>(curElement);
-      if(terminalPtr){
-        shiftE->place = terminalPtr->getVal();
-      }
+      Expr *shiftE = new Expr(terminalName);
       symbolStack.push(shiftE);
       curSymbol = -1;
       break;

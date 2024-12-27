@@ -74,8 +74,8 @@ void CodeGenerator::printcode()
 
 void CodeGenerator::GenerateCode(ProductionAlg prod, stack<int>& stateStack, stack<Expr*>& symbolStack)
 {
-    Expr* res = new Expr();
     vector<Expr*> symbolInfo;
+    Expr* res = new Expr(symbolStack.top()->place);
     for (int i = 0; i < prod.getAlgLength(); ++i)
     {
         stateStack.pop();
@@ -102,30 +102,24 @@ void CodeGenerator::GenerateCode(ProductionAlg prod, stack<int>& stateStack, sta
         {
             Expr* typeE = symbolInfo[i];
             Expr* varE = symbolInfo[i + 1];
-            Expr* assignE = symbolInfo[i + 2];
-            Expr* expE = symbolInfo[i + 3];
-            emit(Quadruple(symbolInfo[i]->place, expE->place, typeE->place, varE->place));
+            // Expr* assignE = symbolInfo[i + 2];
+            // Expr* expE = symbolInfo[i + 3];
+            emit(Quadruple("define", typeE->place, "-", varE->place));
             res->place = "$A" + nextQuad;
-            symbolStack.push(res);
-
         }
         else if (curTerminal->getType() == ASSIGN)
         {
             Expr* leftE = symbolInfo[i - 1];
             Expr* rightE = symbolInfo[i + 1];
-            emit(Quadruple(symbolInfo[i]->place, "-", rightE->place, leftE->place));
+            emit(Quadruple(symbolInfo[i]->place, rightE->place, "-", leftE->place));
             res->place = "$S" + nextQuad;
-            symbolStack.push(res);
-
         }
         else if (curTerminal->getType() == OPERATOR)
         {
             Expr* leftE = symbolInfo[i - 1];
             Expr* rightE = symbolInfo[i + 1];
-            res->place = "$T" + (tempCount++);
+            res->place = "$T" + to_string(tempCount++);
             emit(Quadruple(symbolInfo[i]->place, leftE->place, rightE->place, res->place));
-            symbolStack.push(res);
-
         }
         else if (curTerminal->getType() == RELOP)
         {
@@ -136,7 +130,6 @@ void CodeGenerator::GenerateCode(ProductionAlg prod, stack<int>& stateStack, sta
             res->place = "$S" + nextQuad;
             emit(Quadruple("j" + symbolInfo[i]->place, leftE->place, rightE->place, 0));
             emit(Quadruple("j", "-", "-", 0));
-            symbolStack.push(res);
         }
         //{
         //    Expr E, E1, E2, M;
@@ -178,13 +171,13 @@ void CodeGenerator::GenerateCode(ProductionAlg prod, stack<int>& stateStack, sta
         //    N.nextList = nextQuad;
         //    emit(Quadruple("j", "-", "-", 0));
         // }
-        if (curTerminal->getType() == IFWORD) {
+        // if (curTerminal->getType() == IFWORD) {
 
-        }
+        // }
 
-        else {
-            tempStack.push(E0);
-        }
+        // else {
+        //     tempStack.push(E0);
+        // }
     }
     symbolStack.push(res);
 }

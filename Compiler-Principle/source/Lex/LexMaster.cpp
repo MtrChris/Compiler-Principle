@@ -121,11 +121,9 @@ void processLex(vector<pair<Automaton*, map<int, string>>>&nfas)
 
 void prepareLex()
 {
-	cout << "输入词法路径" << endl;
-	cin >> path;
 	cout << "输入代码路径" << endl;
 	cin >> codeFilePath;
-	readRE(path);
+	readRE(LEXPATH);
 	vector<pair<Automaton*, map<int, string>>>nfas;
 	processLex(nfas);
 	for (auto& i : nfas) {
