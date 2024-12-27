@@ -1,5 +1,4 @@
 #include "CodeGenerator.h"
-#include "GrammarParser.h"
 #include <cstring>
 using namespace std;
 
@@ -66,14 +65,40 @@ int CodeGenerator::merge(int list1, int list2, int list3)
     return listbegin;
 }
 
-
 void CodeGenerator::GenerateCode(ProductionAlg prod, stack<int>& stateStack, stack<Expr*>& symbolStack)
 {
     stack<Expr*> tempStack;
+    vector<Expr*> symbolInfo;
+    for (int i = 0; i < prod.getAlgLength(); ++i)
+    {
+        stateStack.pop();
+        Expr* curSymbol = symbolStack.top();
+        symbolStack.pop();
+        symbolInfo.push_back(curSymbol);
+    }
+    // !!! reverse
+
+    for(int i = 0; i < prod.getAlgLength(); ++i){
+        AlgElement* curElem = prod.getAlgElement(i);
+        if(!curElem->getIsTerminal())
+        {
+            continue;
+        }
+        TerminalElement* curTerminal = dynamic_cast<TerminalElement*>(curElem);
+    }
+
     for (int i = 0; i < prod.getAlgLength(); ++i)
     {
         Expr* E0 = symbolStack.top();
         symbolStack.pop();
+        int curState = stateStack.top();
+        stateStack.pop();
+        AlgElement* curElem = prod.getAlgElement(prod.getAlgLength() - i - 1);
+        if(!curElem->getIsTerminal())
+        {
+            continue;
+        }
+        TerminalElement* curTerminal = dynamic_cast<TerminalElement*>(curElem);
         if (E0->place == "=")
         {
             Expr* E1 = symbolStack.top();
@@ -171,8 +196,8 @@ void CodeGenerator::GenerateCode(ProductionAlg prod, stack<int>& stateStack, sta
         //    emit(Quadruple("j" + op.place, E1.place, E2.place, 0));
         //    emit(Quadruple("j", "-", "-", 0));
         //}
-        //if (CONTROL)
-        //{
+        // if (IFWORD)
+        // {
         //    Expr S, E, S1, S2, E2, M, M1, M2, N;
         //    //S->if E then M S1
         //    backpatch(E.trueList, M.quad);
@@ -186,10 +211,14 @@ void CodeGenerator::GenerateCode(ProductionAlg prod, stack<int>& stateStack, sta
         //    //N->¦Å
         //    N.nextList = nextQuad;
         //    emit(Quadruple("j", "-", "-", 0));
-        //}
+        // }
+        if(curTerminal->getType() == IFWORD){
+
+        }
+
         else {
             tempStack.push(E0);
         }
     }
-
+    symbolStack.push(res);
 }

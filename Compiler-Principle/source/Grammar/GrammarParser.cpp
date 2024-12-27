@@ -840,6 +840,7 @@ void GrammarParser::LR1Main()
   stack<Expr *> symbolStack;
   stateStack.push(0);
   CodeGenerator codegenerator;
+  codegenerator->parser = this;
   int curTerminal = -1;
   int curSymbol = -1;
   while (true)
@@ -867,7 +868,7 @@ void GrammarParser::LR1Main()
       stateStack.push(item.index);
       Expr *shiftE = new Expr();
       TerminalElement* terminalPtr = dynamic_cast<TerminalElement*>(curElement);
-      if(terminalPtr && terminalPtr->getType() == SYMBOL){
+      if(terminalPtr){
         shiftE->place = terminalPtr->getVal();
       }
       symbolStack.push(shiftE);

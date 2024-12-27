@@ -7,6 +7,7 @@
 
 #define ASSIGN "assign"
 #define SYMBOL "symbol"
+#define IFWORD "IF"
 
 class Quadruple
 {
@@ -35,7 +36,7 @@ class CodeGenerator
 public:
 	std::vector<Quadruple> intermediateCode;
 	int nextQuad;
-
+	GrammarParser* parser;
 // public:
 	int tempCount = 0;
 	void emit(Quadruple q);
