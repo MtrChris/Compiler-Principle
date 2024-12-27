@@ -137,24 +137,23 @@ void prepareLex()
 	}
 	readCode(codeFilePath);
 }
-/*
- int main()
- {
- 	try {
- 		prepareLex();
- 		NametabItem a;
- 		int b = 0;
- 		while (1) {
-			b = readNext(a);
-		if (b == FINISHED || b == -1) {
-			break;
-		}
-			cout << a.name << "  " << a.type << endl;
-		}
- 		return 0;
- 	}
- 	catch (exception e) {
-		cout << e.what();
- 	}
- }
- */
+
+ //int main()
+ //{
+ //	try {
+ //		prepareLex();
+ //		NametabItem a;
+ //		int b = 0;
+ //		while (1) {
+	//		b = readNext(a);
+	//	if (b == FINISHED || b == -1) {
+	//		break;
+	//	}
+	//		cout << a.name << "  " << a.type << endl;
+	//	}
+ //		return 0;
+ //	}
+ //	catch (exception e) {
+	//	cout << e.what();
+ //	}
+ //}
